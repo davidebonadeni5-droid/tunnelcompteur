@@ -4,5 +4,13 @@ services:
     image: tunnel-compteur:latest
     container_name: tunnel-compteur
     ports:
-      - "127.0.0.1:8090:80"
+      - "8080:3000"
+    environment:
+      TZ: Europe/Paris        # fuseau pour « aujourd'hui » et le changement de semaine
+      # ADMIN_TOKEN: change-moi  # décommenter pour exiger un jeton pour toute modification
+    volumes:
+      - tunnel-data:/data     # la base SQLite survit aux redémarrages / mises à jour
     restart: unless-stopped
+
+volumes:
+  tunnel-data:
