@@ -1,50 +1,44 @@
 # Prompt amélioré — « Tunnel Compteur »
 
-> Version réécrite du brief d'origine : ambiguïtés levées, règles de calcul explicites, critères d'acceptation testables.
+> Brief réécrit : concept clarifié, règles de calcul explicites, critères d'acceptation testables.
 
----
+**Rôle** : développeur front-end et back-end, spécialiste des animations CSS/SVG/canvas et designer UI/UX orienté gamification.
 
-**Rôle** : Développeur front-end senior, spécialiste des animations CSS/SVG et designer UI/UX (interfaces spatiales, gamification).
+**Concept** : un « tunnel », c'est quand quelqu'un part sur un sujet sans importance (digression, monologue hors sujet). L'équipe compte les tunnels de chacun pendant la semaine. Chaque palier atteint donne un gage humoristique ; au dernier palier (15 tunnels par défaut), la personne paie **une tournée de croissants** 🥐.
 
-**Objectif** : Livrer **un seul fichier `index.html`** (HTML + CSS + JS vanilla, aucune dépendance, aucun build) qui s'ouvre directement dans le navigateur : un compteur de performance hebdomadaire par utilisateur avec système de récompenses, dans l'esthétique « salle de contrôle NASA » (fond nuit, typographie technique monospace, lueurs néon, glassmorphism, télémétrie en direct).
-
-## 1. Règles métier (à respecter exactement)
+## 1. Règles
 
 | Notion | Règle |
 |---|---|
-| Score du jour | Valeur du jour courant (lundi = index 0 … dimanche = 6, d'après la date locale). |
-| Total semaine | Somme lundi → dimanche. |
-| Palier tunnel (0–10) | `min(10, floor(totalSemaine / pointsParTunnel))`, `pointsParTunnel` réglable (défaut 5). |
-| Grade spatial | 11 grades liés au palier (0 = « Recrue » … 10 = « Commandant de Portail »). |
-| Récompense | Celle du palier atteint ; les 10 récompenses (icône + libellé) sont modifiables. |
-| Tunnel central | Mode « Équipe » = palier moyen arrondi à l'inférieur ; ou palier de l'utilisateur sélectionné. |
-| Nouvelle semaine | Les compteurs repassent à 0 automatiquement (utilisateurs et récompenses conservés). |
-| Valeurs | Entiers ≥ 0, jamais négatifs. |
+| Tunnels du jour | Compteur du jour courant (lundi = 0 … dimanche = 6, fuseau du serveur). |
+| Total semaine | Somme lundi → dimanche ; remise à zéro automatique chaque lundi, semaines passées conservées. |
+| Paliers | N paliers (défaut 15, réglable 3–20). Seuils : 1 tunnel par palier, pas fixe, ou seuils libres strictement croissants. |
+| Dernier palier | Gage final, par défaut « Tournée de croissants ». Déclenche l'animation plein écran. |
+| Alerte du jour | Optionnelle : N tunnels dans la même journée (défaut 3). |
+| Palier d'équipe | Moyenne, minimum ou maximum des paliers ; gage d'équipe au dernier palier. |
+| Gages personnels | Chaque participant peut remplacer l'icône / le libellé de n'importe quel palier. |
+| Valeurs | Entiers ≥ 0. |
 
 ## 2. Interface
 
-1. **En-tête** : titre « Tunnel aujourd'hui de la semaine », badge pulsant « Télémétrie active • Objectif : 10 Tunnels », horloge UTC, total équipe.
-2. **Tunnel provoqué** (section centrale) : 10 anneaux SVG concentriques en perspective, numérotés 1→10.
-   - Anneau inactif : gris, pointillés lents. Actif : cyan→violet, rotation `rotateZ` + `stroke-dashoffset` animés, `drop-shadow`. Anneau 10 : or `#FFB800`.
-   - À chaque `+1`/`+5` : onde de choc qui traverse les anneaux actifs de 1 jusqu'au palier (délai en cascade), accélération temporaire de la rotation, rafale de particules **à la couleur de l'utilisateur**.
-   - Passage au palier 10 : animation plein écran d'hyperespace (traînées d'étoiles) + ouverture du portail doré, fermable au clic.
-3. **Cartes utilisateur** (grille responsive) : nom, couleur, grade, compteur du jour, boutons `−1` `+1` `+5`, saisie directe, barre de progression vers le prochain tunnel, récompense débloquée (badge lumineux). Actions : modifier, supprimer (avec confirmation), ajouter.
-4. **Vue télémétrie** (tableau) : Utilisateur, Lun…Dim (cellules éditables, jour courant surligné), Aujourd'hui, Semaine, Palier /10, Récompense. Tri par semaine / aujourd'hui / palier / nom. Clic sur une ligne = sélection : surbrillance de la ligne et de la carte, le tunnel central affiche sa progression.
-5. **Réglages** : édition des 10 récompenses, points par tunnel, bouton « Données d'exemple », bouton « Réinitialiser » (avec confirmation).
+1. En-tête « Tunnel aujourd'hui de la semaine », badge « 🥐 à 15 tunnels », état de connexion, total de l'équipe.
+2. **Tunnel provoqué** : un anneau SVG par palier en perspective. À chaque ajout : onde de choc, accélération, particules à la couleur de la personne. Au dernier palier : écran plein écran doré avec pluie de croissants.
+3. **Cartes participant** : nom, titre humoristique, compteur du jour, `−1` `+1` `+5`, saisie directe, distance jusqu'aux croissants, gage actuel ; ajout / modification / suppression.
+4. **Tableau de la semaine** : Lun→Dim éditables, total, palier, gage ; tri ; clic = suivre la personne dans le tunnel.
+5. **Réglages** : paliers, gages (thèmes prêts à l'emploi), alerte du jour, gage d'équipe, intensité des effets, export / import.
 
-## 3. Contraintes techniques
+## 3. Technique
 
-- Palette : fond `#0B0D17`, panneaux `rgba(16,22,42,.75)` + `backdrop-filter: blur`, cyan `#00F0FF`, violet `#7B2CBF`, or `#FFB800`. Couleurs en variables CSS.
-- Animations uniquement sur `transform`, `opacity`, `filter` (+ `stroke-dashoffset` sur SVG) ; `will-change` ciblé ; respect de `prefers-reduced-motion`.
-- Persistance `localStorage` (clé versionnée) avec repli silencieux si indisponible.
-- Responsive 360 px → 1920 px, sans défilement horizontal de la page (le tableau défile dans son conteneur).
-- Accessibilité : boutons avec `aria-label`, focus visibles, contrastes AA.
-- Données d'exemple pré-remplies (4 utilisateurs à des paliers variés, dont un proche du palier 10) pour tout voir dès l'ouverture.
+- Serveur Node.js + SQLite intégré, sans dépendance ; API REST + Server-Sent Events pour la synchro en direct entre écrans.
+- Repli en mode local (localStorage) si la page est ouverte sans serveur.
+- Docker : image Node alpine, volume persistant pour la base, `TZ` configurable, jeton administrateur optionnel.
+- Palette : fond `#0B0D17`, panneaux verre `rgba(16,22,42,.75)`, cyan `#00F0FF`, violet `#7B2CBF`, or croissant `#FFB800`.
+- Animations sur `transform` / `opacity`, `prefers-reduced-motion` respecté ; responsive 360 → 1920 px.
 
 ## 4. Critères d'acceptation
 
-- [ ] Ouvrir `index.html` hors ligne affiche cartes, tableau et tunnel remplis, sans erreur console.
-- [ ] `+1` sur une carte déclenche l'onde de choc et met à jour carte, tableau et tunnel.
-- [ ] Atteindre le palier 10 déclenche l'hyperespace doré une seule fois par franchissement.
-- [ ] Rechargement de la page = état conservé ; « Réinitialiser » remet tout à zéro.
-- [ ] Ajout / modification / suppression d'utilisateur fonctionnels.
+- [ ] Deux navigateurs ouverts : un `+1` sur l'un apparaît sur l'autre en moins d'une seconde, avec l'animation.
+- [ ] Atteindre le dernier palier affiche l'écran croissants une fois par franchissement, sur tous les écrans.
+- [ ] Changer le nombre de paliers met à jour le nombre d'anneaux et les seuils.
+- [ ] Redémarrer le conteneur conserve les données.
+- [ ] Ouvrir `public/index.html` sans serveur fonctionne en mode local.
