@@ -51,7 +51,8 @@ const DEFAULT_SETTINGS = {
   rewards: baseRewards(15),
   daily: { enabled: true, goal: 3, icon: '🚨', label: 'Journée tunnel' },
   team: { mode: 'avg', icon: '🥐', label: 'Petit-déjeuner géant pour tout le monde' },
-  showRanking: true
+  showRanking: true,
+  afterFinal: 'cycle' // après la tournée : 'cycle' = on repart au palier 1, 'stop' = bloqué jusqu'au lundi
 };
 
 function getSettings() {
@@ -83,7 +84,8 @@ function sanitizeSettings(s) {
       icon: str(daily.icon, 8, d.daily.icon), label: str(daily.label, 60, d.daily.label) },
     team: { mode: ['avg', 'min', 'max'].includes(team.mode) ? team.mode : 'avg',
       icon: str(team.icon, 8, d.team.icon), label: str(team.label, 60, d.team.label) },
-    showRanking: s.showRanking !== false
+    showRanking: s.showRanking !== false,
+    afterFinal: s.afterFinal === 'stop' ? 'stop' : 'cycle'
   };
 }
 function sanitizeOverrides(o) {
