@@ -644,7 +644,7 @@ const Local = {
     const spread = total => { const d = Array(7).fill(0); let left = total;
       for (let i = 0; i <= ti; i++){ const v = i === ti ? left : Math.min(left, Math.floor(total / (ti + 1) * (0.7 + ((i * 37) % 6) / 10))); d[i] = v; left -= v; } return d; };
     return { week: weekIdLocal(), settings: defaultSettings(), history: [], rev: 0,
-      users: [['Louise','#00F0FF',13],['Karim','#c77dff',9],['Inès','#2dff9a',5],['Théo','#ff6bd6',2]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
+      users: [['Davide','#00F0FF',13],['Mathieu','#c77dff',9],['Bryan','#2dff9a',5],['Victor','#ff6bd6',2],['Maeva','#ffd166',0],['Anton','#4cc9f0',0]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
   },
   snapshot(){ return JSON.parse(JSON.stringify({ ...Local.db, today: todayIdxLocal(), boot: 'local', server: false })); },
   commit(event){ Local.db.rev++; lsSet(LS_KEY, Local.db); apply(Local.snapshot(), event); return Promise.resolve({}); },
