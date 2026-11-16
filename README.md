@@ -39,7 +39,7 @@ Ouvrir directement `public/index.html` : l'application passe en **mode local** (
 
 ## Fonctionnalités
 
-- **Cartes participant** : `+1`, `+5`, `−1`, saisie directe, titre humoristique (de « Concis » à « Boulanger officiel »), distance jusqu'aux croissants, gage en cours, alerte « journée tunnel », couronne du roi du tunnel.
+- **Cartes participant** : `+1`, `−1`, saisie directe, bouton « Tournée payée » (les tournées non payées restent dues d'une semaine à l'autre), titre humoristique (de « Concis » à « Boulanger officiel »), distance jusqu'aux croissants, gage en cours, alerte « journée tunnel », couronne du roi du tunnel.
 - **Tableau de la semaine** : Lun→Dim éditables, tri, clic sur une ligne pour suivre la personne dans le tunnel, historique des semaines précédentes.
 - **Tunnel provoqué** : un anneau par palier (15 par défaut), champ d'étoiles en mouvement, onde de choc et particules à chaque tunnel ajouté, confettis à chaque palier, écran plein de croissants au dernier palier, sur **tous** les écrans connectés.
 - **Réglages des paliers et des gages** :

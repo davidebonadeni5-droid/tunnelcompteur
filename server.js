@@ -29,6 +29,9 @@ db.exec(`
     value INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(user_id, week, day));
   CREATE TABLE IF NOT EXISTS settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
 `);
+// Migration : nombre total de tournées payées par participant (toutes semaines confondues)
+if (!db.prepare('PRAGMA table_info(users)').all().some(c => c.name === 'paid'))
+  db.exec('ALTER TABLE users ADD COLUMN paid INTEGER NOT NULL DEFAULT 0');
 
 /* ---------- Dates (fuseau du serveur, réglable via TZ) ---------- */
 const todayIdx = (d = new Date()) => (d.getDay() + 6) % 7;
@@ -100,19 +103,31 @@ function sanitizeOverrides(o) {
   return out;
 }
 
+/* ---------- Tournées ---------- */
+// Nombre de tournées gagnées pour un total hebdomadaire (même règle que le front)
+function roundsFor(total, s) {
+  const goal = s.thresholdMode === 'step' ? s.tiers * s.step : s.rewards[s.rewards.length - 1].threshold;
+  return s.afterFinal === 'stop' ? (total >= goal ? 1 : 0) : Math.floor(total / goal);
+}
+
 /* ---------- Lecture de l'état ---------- */
 function state() {
-  const week = weekId();
+  const week = weekId(), settings = getSettings();
   const users = db.prepare('SELECT * FROM users ORDER BY position, rowid').all().map(u => ({
-    id: u.id, name: u.name, color: u.color, overrides: JSON.parse(u.overrides || '{}'), days: [0, 0, 0, 0, 0, 0, 0]
+    id: u.id, name: u.name, color: u.color, overrides: JSON.parse(u.overrides || '{}'), days: [0, 0, 0, 0, 0, 0, 0],
+    paid: u.paid || 0, pastRounds: 0
   }));
   const byId = Object.fromEntries(users.map(u => [u.id, u]));
   for (const r of db.prepare('SELECT user_id, day, value FROM scores WHERE week = ?').all(week)) {
     if (byId[r.user_id]) byId[r.user_id].days[r.day] = r.value;
   }
+  // Tournées gagnées les semaines précédentes : restent dues tant qu'elles ne sont pas payées
+  for (const r of db.prepare('SELECT user_id, SUM(value) AS t FROM scores WHERE week <> ? GROUP BY user_id, week').all(week)) {
+    if (byId[r.user_id]) byId[r.user_id].pastRounds += roundsFor(Number(r.t), settings);
+  }
   const history = db.prepare(`SELECT week, SUM(value) AS total FROM scores WHERE week <> ?
     GROUP BY week ORDER BY week DESC LIMIT 8`).all(week).map(r => ({ week: r.week, total: Number(r.total) }));
-  return { week, today: todayIdx(), users, settings: getSettings(), history, rev, boot: BOOT, server: true };
+  return { week, today: todayIdx(), users, settings, history, rev, boot: BOOT, server: true };
 }
 
 /* ---------- Écritures ---------- */
@@ -240,6 +255,15 @@ async function api(req, res, url) {
     });
     return done(res, 200, { type: 'score', userId: id, day, delta: value.v - value.before }, { value: value.v });
   }
+  if ((mu = p.match(/^\/api\/users\/([a-z0-9]+)\/paid$/)) && m === 'POST') {
+    const id = mu[1]; if (!userExists(id)) throw fail(404, 'Utilisateur introuvable');
+    const u = state().users.find(x => x.id === id);
+    const earned = u.pastRounds + roundsFor(u.days.reduce((a, v) => a + v, 0), getSettings());
+    const paid = Math.max(0, Math.min(earned, u.paid + int(b.delta, -1, 1, 1)));
+    if (paid === u.paid) throw fail(409, paid ? 'Aucune tournée à payer' : 'Aucune tournée payée à annuler');
+    db.prepare('UPDATE users SET paid = ? WHERE id = ?').run(paid, id);
+    return done(res, 200, { type: 'paid', userId: id, delta: paid - u.paid });
+  }
   if (m === 'PUT' && p === '/api/settings') {
     db.prepare(`INSERT INTO settings(key, value) VALUES('main', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`)
       .run(JSON.stringify(sanitizeSettings(b)));
@@ -257,9 +281,10 @@ async function api(req, res, url) {
       const ids = new Set();
       b.users.slice(0, 500).forEach((u, i) => {
         const id = /^[a-z0-9]{1,20}$/.test(u.id) ? u.id : uid(); ids.add(id);
-        db.prepare('INSERT INTO users(id, name, color, position, overrides) VALUES(?,?,?,?,?)').run(
+        db.prepare('INSERT INTO users(id, name, color, position, overrides, paid) VALUES(?,?,?,?,?,?)').run(
           id, str(u.name, 40, 'Sans nom'), color(u.color, '#00F0FF'), i,
-          JSON.stringify(sanitizeOverrides(typeof u.overrides === 'string' ? JSON.parse(u.overrides || '{}') : u.overrides)));
+          JSON.stringify(sanitizeOverrides(typeof u.overrides === 'string' ? JSON.parse(u.overrides || '{}') : u.overrides)),
+          int(u.paid, 0, 1e6, 0));
       });
       for (const s of b.scores.slice(0, 200000)) {
         if (!ids.has(s.user_id) || !/^\d{4}-W\d{2}$/.test(s.week)) continue;

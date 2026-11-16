@@ -169,6 +169,14 @@ body.fx-max .rw.on::after,body.fx-max .reward-badge::after{display:block;will-ch
 
 @keyframes pop{40%{transform:scale(1.03)}}
 .crown{font-size:.9rem;filter:drop-shadow(0 0 6px var(--gold))}
+.pay-btn{width:100%;margin-top:10px;padding:9px 12px;border-radius:10px;border:1px solid rgba(255,184,0,.6);background:rgba(255,184,0,.12);color:var(--gold);
+  font-family:var(--mono);font-weight:700;font-size:.82rem;display:flex;justify-content:center;align-items:center;gap:8px;transition:background .15s,transform .1s}
+.pay-btn:hover{background:rgba(255,184,0,.22)}
+.pay-btn:active{transform:scale(.97)}
+.pay-btn small{font-weight:400;opacity:.8}
+.paid-line{margin-top:6px;font-family:var(--mono);font-size:.68rem;color:var(--green);display:flex;gap:6px;align-items:center}
+.link{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font:inherit;cursor:pointer}
+.link:hover{color:var(--text)}
 .rounds{display:inline-flex;align-items:center;margin-left:6px;padding:1px 7px;border-radius:999px;font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--gold);border:1px solid rgba(255,184,0,.5);background:rgba(255,184,0,.1)}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .card-name{font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px;word-break:break-word}
@@ -181,7 +189,7 @@ body.fx-max .rw.on::after,body.fx-max .reward-badge::after{display:block;will-ch
 .counter .unit{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase}
 .week{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
 .week b{color:var(--text)}
-.ctrls{display:grid;grid-template-columns:repeat(3,1fr) 1.3fr;gap:6px;margin:12px 0}
+.ctrls{display:grid;grid-template-columns:1fr 1.6fr 1.2fr;gap:6px;margin:12px 0}
 .ctrls button{position:relative;padding:9px 0;border-radius:10px;border:1px solid var(--line);background:rgba(0,240,255,.06);font-family:var(--mono);font-weight:700;transition:background .15s,transform .1s}
 .ctrls button:hover{background:rgba(0,240,255,.16)}
 .ctrls button:active{transform:scale(.9)}
@@ -601,7 +609,12 @@ function tierOfTotal(total){ return thresholds().filter(t => total >= t).length;
 // Cycle : après la tournée, on repart au palier 1. 15 → tournée n°1 ; 16 → palier 1 du 2e tour ; 30 → tournée n°2…
 const goalOf = () => thresholds()[NT() - 1];
 const cycling = () => S.settings.afterFinal !== 'stop';
-function rounds(u){ const w = weekTotal(u), g = goalOf(); return cycling() ? Math.floor(w / g) : (w >= g ? 1 : 0); } // tournées dues
+function roundsForTotal(w, st){ // même règle que le serveur
+  const g = st.thresholdMode === 'step' ? st.rewards.length * st.step : st.rewards[st.rewards.length - 1].threshold;
+  return st.afterFinal === 'stop' ? (w >= g ? 1 : 0) : Math.floor(w / g);
+}
+const rounds = u => roundsForTotal(weekTotal(u), S.settings);            // tournées gagnées cette semaine
+const due = u => Math.max(0, (u.pastRounds || 0) + rounds(u) - (u.paid || 0)); // tournées encore à payer (toutes semaines)
 function cycleTotal(u){
   const w = weekTotal(u), g = goalOf();
   if (!cycling() || w <= g) return w;
@@ -621,7 +634,7 @@ function rewardFor(u, tier){ // tier 1..NT
 }
 const focusUser = () => S.users.find(u => u.id === prefs.focus) || null;
 const shownTier = () => { const f = focusUser(); return f ? tierOf(f) : teamTier(); };
-function roundsBadge(u){ const r = rounds(u); return r ? `<span class="rounds" title="Tournées dues cette semaine">${esc(rewardFor(u, NT()).icon)}×${r}</span>` : ''; }
+function roundsBadge(u){ const r = due(u); return r ? `<span class="rounds" title="Tournées à payer">${esc(rewardFor(u, NT()).icon)}×${r}</span>` : ''; }
 function leaderId(){ if (!S.users.length) return null; const best = [...S.users].sort((a,b) => weekTotal(b) - weekTotal(a))[0]; return weekTotal(best) > 0 ? best.id : null; }
 
 /* =====================================================================
@@ -645,6 +658,7 @@ const Server = {
   addUser: u => Server.call('POST', '/api/users', u),
   updateUser: (id, u) => Server.call('PATCH', `/api/users/${id}`, u),
   deleteUser: id => Server.call('DELETE', `/api/users/${id}`),
+  pay: (id, delta) => Server.call('POST', `/api/users/${id}/paid`, { delta }),
   saveSettings: s => Server.call('PUT', '/api/settings', s),
   reset: () => Server.call('POST', '/api/reset'),
   demo: () => Server.call('POST', '/api/demo'),
@@ -665,7 +679,7 @@ const Local = {
     d.settings = normSettings(d.settings); d.history = d.history || []; d.rev = d.rev || 0;
     if (d.week !== weekIdLocal()){ // nouvelle semaine : archive + remise à zéro
       d.history.unshift({ week: d.week, total: sum(d.users.map(u => sum(u.days))) }); d.history = d.history.slice(0, 8);
-      d.users.forEach(u => u.days = Array(7).fill(0)); d.week = weekIdLocal();
+      d.users.forEach(u => { u.pastRounds = (u.pastRounds || 0) + roundsForTotal(sum(u.days), d.settings); u.days = Array(7).fill(0); }); d.week = weekIdLocal();
       setTimeout(() => toast('Nouvelle semaine : compteurs remis à zéro'), 800);
     }
     Local.db = d; return Local.snapshot();
@@ -675,16 +689,22 @@ const Local = {
     const spread = total => { const d = Array(7).fill(0); let left = total;
       for (let i = 0; i <= ti; i++){ const v = i === ti ? left : Math.min(left, Math.floor(total / (ti + 1) * (0.7 + ((i * 37) % 6) / 10))); d[i] = v; left -= v; } return d; };
     return { week: weekIdLocal(), settings: defaultSettings(), history: [], rev: 0,
-      users: [['Davide','#00F0FF',13],['Mathieu','#c77dff',9],['Bryan','#2dff9a',5],['Victor','#ff6bd6',2],['Maeva','#ffd166',0],['Anton','#4cc9f0',0]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
+      users: [['Davide','#00F0FF',13],['Mathieu','#c77dff',9],['Bryan','#2dff9a',5],['Victor','#ff6bd6',2],['Maeva','#ffd166',0],['Anton','#4cc9f0',0]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t), paid: 0, pastRounds: 0 })) };
   },
   snapshot(){ return JSON.parse(JSON.stringify({ ...Local.db, today: todayIdxLocal(), boot: 'local', server: false })); },
   commit(event){ Local.db.rev++; lsSet(LS_KEY, Local.db); apply(Local.snapshot(), event); return Promise.resolve({}); },
   find: id => Local.db.users.find(u => u.id === id),
   score(id, day, delta){ const u = Local.find(id); const b = u.days[day]; u.days[day] = Math.max(0, b + delta); return Local.commit({ type:'score', userId:id, day, delta: u.days[day] - b }); },
   setScore(id, day, value){ const u = Local.find(id); const b = u.days[day]; u.days[day] = clampInt(value, 0, 1e6, b); return Local.commit({ type:'score', userId:id, day, delta: u.days[day] - b }); },
-  addUser(u){ const id = uid(); Local.db.users.push({ id, name: u.name, color: u.color, overrides: u.overrides || {}, days: Array(7).fill(0) }); return Local.commit({ type:'user-added', userId:id }); },
+  addUser(u){ const id = uid(); Local.db.users.push({ id, name: u.name, color: u.color, overrides: u.overrides || {}, days: Array(7).fill(0), paid: 0, pastRounds: 0 }); return Local.commit({ type:'user-added', userId:id }); },
   updateUser(id, p){ Object.assign(Local.find(id), p); return Local.commit({ type:'user-updated', userId:id }); },
   deleteUser(id){ Local.db.users = Local.db.users.filter(u => u.id !== id); return Local.commit({ type:'user-deleted', userId:id }); },
+  pay(id, delta){
+    const u = Local.find(id), earned = (u.pastRounds || 0) + roundsForTotal(sum(u.days), Local.db.settings);
+    const paid = Math.max(0, Math.min(earned, (u.paid || 0) + delta));
+    if (paid === (u.paid || 0)) return Promise.reject(new Error(delta > 0 ? 'Aucune tournée à payer' : 'Aucune tournée payée à annuler'));
+    const d = paid - (u.paid || 0); u.paid = paid; return Local.commit({ type:'paid', userId:id, delta:d });
+  },
   saveSettings(s){ Local.db.settings = normSettings(s); return Local.commit({ type:'settings' }); },
   reset(){ Local.db.users.forEach(u => u.days = Array(7).fill(0)); return Local.commit({ type:'reset' }); },
   demo(){ Local.db = Local.demoData(); return Local.commit({ type:'demo' }); },
@@ -692,14 +712,14 @@ const Local = {
     if (!Array.isArray(d.users)) throw new Error('Fichier d’export invalide');
     const wk = weekIdLocal();
     const users = d.users.map(u => ({ id: u.id || uid(), name: u.name || 'Sans nom', color: u.color || '#00F0FF',
-      overrides: typeof u.overrides === 'string' ? JSON.parse(u.overrides || '{}') : (u.overrides || {}), days: Array.isArray(u.days) ? u.days.slice(0,7) : Array(7).fill(0) }));
+      overrides: typeof u.overrides === 'string' ? JSON.parse(u.overrides || '{}') : (u.overrides || {}), days: Array.isArray(u.days) ? u.days.slice(0,7) : Array(7).fill(0), paid: clampInt(u.paid, 0, 1e6, 0), pastRounds: clampInt(u.pastRounds, 0, 1e6, 0) }));
     (d.scores || []).forEach(s => { if (s.week === wk){ const u = users.find(x => x.id === s.user_id); if (u) u.days[s.day] = s.value; } });
     Local.db = { week: wk, settings: normSettings(d.settings), history: [], rev: Local.db.rev, users };
     return Local.commit({ type:'import' });
   },
   exportData(){ const d = Local.db;
     return Promise.resolve({ exportedAt: new Date().toISOString(), settings: d.settings,
-      users: d.users.map(u => ({ id:u.id, name:u.name, color:u.color, overrides:u.overrides })),
+      users: d.users.map(u => ({ id:u.id, name:u.name, color:u.color, overrides:u.overrides, paid:u.paid || 0, pastRounds:u.pastRounds || 0 })),
       scores: d.users.flatMap(u => u.days.map((value, day) => ({ user_id:u.id, week:d.week, day, value }))) }); }
 };
 let store = Local;
@@ -919,6 +939,16 @@ function apply(next, event, fromStream){
   if (prefs.focus && !S.users.some(u => u.id === prefs.focus)) prefs.focus = null;
   render();
   if (!prev || !event) return;
+  if (event.type === 'paid'){
+    const u = S.users.find(x => x.id === event.userId);
+    if (u && event.delta > 0){
+      const fin = rewardFor(u, NT());
+      toast(`${fin.icon} ${u.name} a payé sa tournée, merci !`, '#FFB800');
+      const card = document.querySelector(`.card[data-id="${u.id}"]`);
+      if (card){ const [x, y] = centerOf(card); FX.burst(x, y, ['#FFB800', '#fff', u.color], 40, 6, fin.icon, 70); }
+    } else if (u) toast(`Paiement annulé pour ${u.name}`);
+    return;
+  }
   const quiet = ['settings','demo','import','reset','hello','rollover'].includes(event.type);
   if (event.type === 'score' && event.delta){
     const u = S.users.find(x => x.id === event.userId);
@@ -937,7 +967,7 @@ function apply(next, event, fromStream){
   let hyperDone = false;
   for (const u of S.users){
     const a = prevTiers[u.id] ?? 0, b = tierOf(u);
-    if (rounds(u) > (prevRounds[u.id] ?? 0)){ if (!hyperDone){ hyperspace(u); hyperDone = true; } continue; } // nouvelle tournée (même en sautant 15 avec +5)
+    if (rounds(u) > (prevRounds[u.id] ?? 0)){ if (!hyperDone){ hyperspace(u); hyperDone = true; } continue; } // nouvelle tournée (même en sautant le seuil via la saisie directe)
     if (b > a){
       const rw = rewardFor(u, b);
       if (b === NT() && !hyperDone){ hyperspace(u); hyperDone = true; }
@@ -1025,16 +1055,21 @@ function cardHTML(u, lead){
     <div class="ctrls">
       <button class="minus" data-act="add" data-n="-1" aria-label="Retirer 1 tunnel à ${esc(u.name)}">−1</button>
       <button data-act="add" data-n="1" aria-label="Ajouter 1 tunnel à ${esc(u.name)}">+1</button>
-      <button data-act="add" data-n="5" aria-label="Ajouter 5 tunnels à ${esc(u.name)}">+5</button>
       <input type="number" min="0" inputmode="numeric" value="${tv}" data-act="set" aria-label="Saisie directe du score du jour de ${esc(u.name)}">
     </div>
     <div class="prog-lbl"><span>${t >= N ? `${esc(fin.icon)} À payer !${cycling() ? ' Le prochain tunnel relance un tour' : ''}` : `Prochain : ${esc(next.icon)} ${esc(next.label)}`}</span><span>${t >= N ? ct + '/' + goal : `${esc(fin.icon)}${nr ? ' n°' + (nr + 1) : ''} dans ${left}`}</span></div>
     <div class="prog"><i style="--p:${p.toFixed(3)}"></i></div>
     ${rw ? `<div class="reward-badge ${t >= N ? 'gold' : ''}" ${rw.color ? `style="--rc:${rw.color}"` : ''}><span class="ic">${esc(rw.icon)}</span><div><small>${t >= N ? 'À payer' + (nr > 1 ? ' · tournée n°' + nr : '') : 'Palier ' + t}${rw.personal ? ' · perso' : ''}</small>${esc(rw.label)}${rw.desc ? `<em>${esc(rw.desc)}</em>` : ''}</div></div>`
-         : nr ? `<div class="reward-badge gold"><span class="ic">${esc(fin.icon)}</span><div><small>Nouveau tour</small>${nr} tournée${nr > 1 ? 's' : ''} déjà due${nr > 1 ? 's' : ''}</div></div>`
+         : nr ? `<div class="reward-badge gold"><span class="ic">${esc(fin.icon)}</span><div><small>Nouveau tour</small>${nr} tournée${nr > 1 ? 's' : ''} gagnée${nr > 1 ? 's' : ''} cette semaine</div></div>`
          : `<div class="reward-badge none"><span class="ic">😇</span><div><small>Aucun palier</small>Clean pour l'instant</div></div>`}
+    ${payHTML(u, fin)}
     ${d.enabled ? `<div class="daily ${tv >= d.goal ? 'alert' : ''}">${tv >= d.goal ? esc(d.icon) + ' ' + esc(d.label) : `Aujourd'hui : ${tv}/${d.goal} avant alerte`}</div>` : ''}
   </article>`;
+}
+function payHTML(u, fin){
+  const n = due(u), p = u.paid || 0;
+  return (n ? `<button class="pay-btn" data-act="pay" type="button">✓ ${esc(fin.icon)} Tournée payée <small>${n} à payer</small></button>` : '') +
+    (p ? `<div class="paid-line">✓ ${p} tournée${p > 1 ? 's' : ''} payée${p > 1 ? 's' : ''} <button type="button" data-act="unpay" class="link">annuler</button></div>` : '');
 }
 function renderCards(){
   const lead = S.settings.showRanking ? leaderId() : null;
@@ -1093,6 +1128,8 @@ $('#cards').addEventListener('click', e => {
   const u = userById(b.closest('.card')?.dataset.id); if (!u) return;
   if (act === 'add'){ lastLocal = { id: u.id, t: Date.now() }; run(() => store.score(u.id, S.today, +b.dataset.n)); }
   else if (act === 'edit') openUser(u);
+  else if (act === 'pay'){ lastLocal = { id: u.id, t: Date.now() }; run(() => store.pay(u.id, 1)); }
+  else if (act === 'unpay'){ if (confirm(`Annuler la dernière tournée payée de ${u.name} ?`)) run(() => store.pay(u.id, -1)); }
   else if (act === 'focus'){ prefs.focus = prefs.focus === u.id ? null : u.id; savePrefs(); render(); }
   else if (act === 'del' && confirm(`Supprimer ${u.name} de l'équipage ? Son historique sera effacé.`)) run(() => store.deleteUser(u.id));
 });
