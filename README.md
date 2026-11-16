@@ -11,3 +11,19 @@ Compteur de performance hebdomadaire et système de récompenses (10 tunnels), t
 - Sauvegarde `localStorage`, remise à zéro automatique chaque nouvelle semaine, bouton Réinitialiser
 
 Le brief amélioré est dans [`PROMPT.md`](PROMPT.md).
+
+## Docker
+
+Image nginx (alpine) qui sert `index.html`.
+
+```bash
+docker compose up -d --build
+```
+
+Puis ouvrir http://localhost:8080. Sans Compose :
+
+```bash
+docker build -t tunnel-compteur . && docker run -d -p 8080:80 --name tunnel-compteur tunnel-compteur
+```
+
+Les données restent dans le `localStorage` du navigateur : le conteneur ne stocke rien.

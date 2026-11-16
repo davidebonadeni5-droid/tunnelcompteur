@@ -1,0 +1,8 @@
+services:
+  tunnel-compteur:
+    build: .
+    image: tunnel-compteur:latest
+    container_name: tunnel-compteur
+    ports:
+      - "8080:80"
+    restart: unless-stopped
