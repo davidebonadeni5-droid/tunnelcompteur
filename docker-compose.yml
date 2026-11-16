@@ -4,5 +4,5 @@ services:
     image: tunnel-compteur:latest
     container_name: tunnel-compteur
     ports:
-      - "8080:80"
+      - "127.0.0.1:8090:80"
     restart: unless-stopped
