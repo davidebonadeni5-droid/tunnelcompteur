@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tunnel Compteur</title>
-<meta name="description" content="Compteur de performance hebdomadaire partagé et système de récompenses — 10 tunnels, thème salle de contrôle spatiale.">
+<meta name="description" content="Compteur partagé des tunnels (digressions) de la semaine — tournée de croissants au dernier palier.">
 <style>
 :root{
   --bg:#0B0D17; --panel:rgba(16,22,42,.75); --panel-solid:#10162a;
@@ -91,26 +91,28 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .ring.on .main{stroke-width:1.7;stroke-dasharray:none;filter:drop-shadow(0 0 2.5px var(--cyan))}
 .ring.on .seg{animation:dash 5s linear infinite;stroke-width:1.1}
 .ring.on .sat{fill:#fff;filter:drop-shadow(0 0 3px var(--cyan))}
-.ring.on.n10 .main,.ring.on.n10 .seg,.ring.on.n10 .ticks{stroke:var(--gold);filter:drop-shadow(0 0 4px var(--gold))}
-.ring.on.n10 .sat{filter:drop-shadow(0 0 4px var(--gold))}
+.ring.on.last .main,.ring.on.last .seg,.ring.on.last .ticks{stroke:var(--gold);filter:drop-shadow(0 0 4px var(--gold))}
+.ring.on.last .sat{filter:drop-shadow(0 0 4px var(--gold))}
 .ring.current .main{stroke-width:2.8}
 .ring.current{animation:breathe 2.4s ease-in-out infinite}
 .ring .lbl{position:absolute;left:50%;top:-1%;transform:translate(-50%,-50%) scale(calc(1 / var(--s)));font-family:var(--mono);font-size:10px;padding:1px 6px;
   border-radius:6px;background:var(--bg);border:1px solid rgba(138,155,189,.3);color:var(--muted);white-space:nowrap;transition:color .4s,border-color .4s}
+.ring.lbl-b .lbl{top:101%}
 .ring.on .lbl{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(0,240,255,.4)}
-.ring.n10.on .lbl{color:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(255,184,0,.6)}
+.ring.last.on .lbl{color:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(255,184,0,.6)}
 .ring .shock{position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none;border:2px solid var(--pc,var(--cyan));
   box-shadow:0 0 18px var(--pc,var(--cyan)),inset 0 0 18px var(--pc,var(--cyan))}
 .ring.hit .shock{animation:shock .75s cubic-bezier(.2,.7,.3,1) var(--delay,0s) both}
 .ring.spun .boost{animation:boost 1.5s cubic-bezier(.15,.8,.25,1) var(--delay,0s) both}
 .ring.ignite{animation:ignite 1.1s cubic-bezier(.2,.9,.2,1.2) both}
 .ring.ignite .lbl{animation:lblpop 1.1s ease both}
+.ring.lbl-b.ignite .lbl{animation:none}
 @keyframes spin{to{transform:rotateZ(360deg)}}
 @keyframes dash{to{stroke-dashoffset:-90}}
 @keyframes breathe{50%{transform:scale(calc(var(--s) * 1.025))}}
 @keyframes shock{0%{opacity:0;transform:scale(.88)}25%{opacity:1}100%{opacity:0;transform:scale(1.14)}}
 @keyframes boost{from{transform:rotateZ(0)}to{transform:rotateZ(var(--boostDeg,240deg))}}
-@keyframes ignite{0%{transform:scale(calc(var(--s) * 1.5));opacity:0;filter:brightness(4)}60%{opacity:1;filter:brightness(2)}100%{transform:scale(var(--s));filter:none}}
+@keyframes ignite{0%{transform:scale(calc(var(--s) * 1.2));opacity:0;filter:brightness(4)}60%{opacity:1;filter:brightness(2)}100%{transform:scale(var(--s));filter:none}}
 @keyframes lblpop{0%{transform:translate(-50%,-50%) scale(calc(2.4 / var(--s)))}100%{transform:translate(-50%,-50%) scale(calc(1 / var(--s)))}}
 
 .core{position:absolute;left:50%;top:50%;width:18%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
@@ -182,7 +184,9 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .prog i{display:block;height:100%;width:100%;transform-origin:left;transform:scaleX(var(--p));transition:transform .7s cubic-bezier(.2,.8,.2,1);
   background:linear-gradient(90deg,var(--violet),var(--pc),#fff);background-size:200% 100%;animation:flow 2.5s linear infinite}
 @keyframes flow{to{background-position:-200% 0}}
-.prog-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.68rem;color:var(--muted);margin:10px 0 5px}
+.prog-lbl span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.prog-lbl span:last-child{white-space:nowrap}
+.prog-lbl{display:flex;gap:8px;justify-content:space-between;font-family:var(--mono);font-size:.68rem;color:var(--muted);margin:10px 0 5px}
 .reward-badge{position:relative;overflow:hidden;margin-top:12px;display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:12px;
   border:1px solid color-mix(in srgb,var(--rc,var(--cyan)) 45%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--rc,var(--cyan)) 10%,transparent),rgba(123,44,191,.12))}
 .reward-badge .ic{font-size:1.4rem;filter:drop-shadow(0 0 6px var(--rc,var(--cyan)))}
@@ -193,7 +197,7 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .reward-badge.gold{--rc:var(--gold);animation:goldglow 2s ease-in-out infinite}
 @keyframes goldglow{50%{box-shadow:0 0 22px -4px var(--gold)}}
 .daily{margin-top:8px;font-family:var(--mono);font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:6px}
-.daily.ok{color:var(--green)}
+.daily.alert{color:#ff9f43;text-shadow:0 0 8px rgba(255,159,67,.5)}
 .add-card{display:grid;place-items:center;min-height:200px;border-style:dashed;color:var(--muted);font-family:var(--mono);letter-spacing:.1em;background:rgba(16,22,42,.4)}
 .add-card:hover{color:var(--cyan);border-color:var(--cyan)}
 .add-card span{font-size:2rem;display:block;text-align:center}
@@ -309,14 +313,14 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
 <div class="wrap">
   <header>
     <div class="brand">
-      <small>Mission Control · Semaine <span id="weekNo">--</span></small>
+      <small>Salle de réunion · Semaine <span id="weekNo">--</span></small>
       <h1>Tunnel aujourd'hui de la semaine</h1>
     </div>
     <div class="status">
-      <span class="badge"><span class="dot"></span>Télémétrie active • Objectif : <b>10 Tunnels</b></span>
+      <span class="badge"><span class="dot"></span>Compteur actif • <span id="goalBadge">🥐 à <b>15 tunnels</b></span></span>
       <span class="badge" id="conn" title="Source des données"><span class="dot off"></span><span>Connexion…</span></span>
       <span class="badge" id="clock">--:--:-- UTC</span>
-      <span class="badge">Équipe : <b id="teamTotal">0</b> pts</span>
+      <span class="badge">Équipe : <b id="teamTotal">0</b> tunnels</span>
     </div>
   </header>
 
@@ -327,7 +331,7 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
         <span class="badge" id="tunnelMode">Équipe</span>
       </div>
       <div class="tunnel-meta">
-        <span>Palier : <strong id="tierNow">0</strong>/10</span>
+        <span>Palier : <strong id="tierNow">0</strong>/<span id="tierMax">15</span></span>
         <span>Prochain tunnel : <strong id="tierNext">—</strong></span>
       </div>
       <div class="tunnel-stage" id="stage">
@@ -342,7 +346,7 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
 
     <section class="panel rewards-panel" aria-labelledby="t-rw">
       <div class="section-title" style="margin:0">
-        <h2 id="t-rw">Récompenses</h2>
+        <h2 id="t-rw">Paliers &amp; gages</h2>
         <button class="btn" id="btnSettings" type="button">⚙ Réglages</button>
       </div>
       <ul class="rewards" id="rewards"></ul>
@@ -351,13 +355,13 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
   </div>
 
   <section aria-labelledby="t-crew">
-    <div class="section-title"><h2 id="t-crew">Équipage</h2></div>
+    <div class="section-title"><h2 id="t-crew">Participants</h2></div>
     <div class="cards" id="cards"></div>
   </section>
 
   <section class="panel table-panel" aria-labelledby="t-tele">
     <div class="section-title">
-      <h2 id="t-tele">Vue télémétrie</h2>
+      <h2 id="t-tele">Tableau de la semaine</h2>
       <label class="inline">Tri
         <select id="sort">
           <option value="week">Total semaine</option>
@@ -392,13 +396,13 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
 <!-- Dialogue utilisateur -->
 <dialog id="dlgUser" class="narrow">
   <form method="dialog" id="formUser">
-    <h3 id="dlgUserTitle">Nouvel astronaute</h3>
+    <h3 id="dlgUserTitle">Nouveau participant</h3>
     <div class="grid2">
       <label>Nom<input type="text" name="name" maxlength="40" required autocomplete="off"></label>
-      <label>Couleur du flux de particules<input type="color" name="color" value="#00F0FF"></label>
+      <label>Couleur<input type="color" name="color" value="#00F0FF"></label>
     </div>
-    <h4>Récompenses personnelles</h4>
-    <p class="hint">Laissez vide pour utiliser la récompense commune de l'équipe. Remplissez pour offrir une récompense propre à cette personne.</p>
+    <h4>Gages personnels</h4>
+    <p class="hint">Laissez vide pour garder le gage commun. Remplissez pour un gage propre à cette personne (ex. « Pains au chocolat » au lieu de croissants).</p>
     <div id="ovEdit" style="display:grid;gap:6px"></div>
     <div class="dlg-actions">
       <button class="btn ghost" value="cancel" formnovalidate>Annuler</button>
@@ -420,22 +424,23 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
           <option value="custom">Seuils personnalisés par tunnel</option>
         </select>
       </label>
-      <label>Points par tunnel (pas fixe)<input type="number" name="step" min="1" max="10000"></label>
+      <label>Tunnels par palier (pas fixe)<input type="number" name="step" min="1" max="10000"></label>
     </div>
+    <label>Nombre de paliers (le dernier = la tournée)<input type="number" name="tiers" min="3" max="20"></label>
 
-    <h4>Les 10 récompenses</h4>
+    <h4>Les paliers</h4>
     <div class="presets">
-      <button type="button" class="btn sm" data-preset="space">🚀 Thème spatial</button>
-      <button type="button" class="btn sm" data-preset="perks">☕ Récompenses concrètes</button>
-      <button type="button" class="btn sm" data-preset="game">🥇 Rangs de jeu</button>
+      <button type="button" class="btn sm" data-preset="gages">🙊 Gages &amp; croissants</button>
+      <button type="button" class="btn sm" data-preset="bakery">🥐 Boulangerie</button>
+      <button type="button" class="btn sm" data-preset="simple">🔢 Sobre</button>
       <button type="button" class="btn sm" data-curve="1">📈 Seuils progressifs</button>
     </div>
     <div class="rw-table" id="rwEdit"></div>
 
     <h4>Bonus</h4>
     <div class="grid3">
-      <label class="inline"><input type="checkbox" name="dailyEnabled"> Objectif quotidien</label>
-      <label>Points par jour<input type="number" name="dailyGoal" min="1"></label>
+      <label class="inline"><input type="checkbox" name="dailyEnabled"> Alerte du jour</label>
+      <label>Tunnels dans la journée<input type="number" name="dailyGoal" min="1"></label>
       <label>Icône + libellé
         <span style="display:grid;grid-template-columns:52px 1fr;gap:6px"><input type="text" name="dailyIcon" maxlength="8"><input type="text" name="dailyLabel" maxlength="60"></span>
       </label>
@@ -448,11 +453,11 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
           <option value="max">le meilleur palier</option>
         </select>
       </label>
-      <label style="grid-column:span 2">Récompense d'équipe (palier 10)
+      <label style="grid-column:span 2">Gage d'équipe (dernier palier atteint par l'équipe)
         <span style="display:grid;grid-template-columns:52px 1fr;gap:6px"><input type="text" name="teamIcon" maxlength="8"><input type="text" name="teamLabel" maxlength="60"></span>
       </label>
     </div>
-    <label class="inline"><input type="checkbox" name="showRanking"> Afficher la couronne du leader</label>
+    <label class="inline"><input type="checkbox" name="showRanking"> Afficher la couronne du « roi du tunnel »</label>
 
     <h4>Sur cet écran uniquement</h4>
     <div class="grid2">
@@ -473,14 +478,14 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
   </form>
 </dialog>
 
-<div class="hyper" id="hyper" role="dialog" aria-label="Portail 10 ouvert">
+<div class="hyper" id="hyper" role="dialog" aria-label="Tournée de croissants">
   <canvas id="hyperCanvas" aria-hidden="true"></canvas>
   <div class="hrays"></div>
   <div class="portal"><i></i><i></i><i></i><div class="portal-txt">
-    <div class="t">PORTAIL 10 OUVERT</div>
+    <div class="t" id="hyperTitle">DERNIER PALIER</div>
     <div class="n" id="hyperName"></div>
-    <div class="r" id="hyperReward">🏆</div>
-    <div class="h">Cliquer pour revenir en orbite</div>
+    <div class="r" id="hyperReward">🥐</div>
+    <div class="h">Cliquer pour fermer</div>
   </div></div>
 </div>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -489,16 +494,28 @@ body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!
 <script>
 (() => {
 'use strict';
-const LS_KEY = 'tunnel-compteur-v2', LS_PREF = 'tunnel-compteur-prefs';
+const LS_KEY = 'tunnel-compteur-v3', LS_PREF = 'tunnel-compteur-prefs';
 const DAYS = ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
-const GRADES = ['Recrue','Cadet','Navigateur','Pilote','Lieutenant orbital','Capitaine de vol','Commandant de bord','Explorateur lunaire','Pionnier martien','Amiral stellaire','Commandant de Portail'];
+const GRADES = ['Concis','Synthétique','Petit détour','Bavard','Digressif','Hors-sujet','Conférencier','Monologueur','Spéléologue','Roi du tunnel','Boulanger officiel'];
+const gradeOf = (t, n) => GRADES[Math.round(t / n * (GRADES.length - 1))];
 const PALETTE = ['#00F0FF','#c77dff','#2dff9a','#ff6bd6','#ffd166','#4cc9f0','#ff8c42'];
+// Chaque thème : paliers intermédiaires (pris dans l'ordre) + le dernier palier
+const FINAL = ['🥐','Tournée de croissants','Pour toute l’équipe !'];
 const PRESETS = {
-  space: [['🛰️','Satellite d’argent','Premier signal capté'],['🚀','Décollage réussi','Le moteur est lancé'],['🌙','Orbite lunaire','Rythme de croisière'],['☄️','Chasseur de comètes','Ça accélère'],['🪐','Anneaux de Saturne','Mi-parcours'],['🌌','Voie lactée','Au-delà du système'],['🔭','Œil de Hubble','Vision longue portée'],['👨‍🚀','Sortie extravéhiculaire','Hors de la capsule'],['🌠','Pluie d’étoiles','Dernière ligne droite'],['🏆','Portail d’or NASA','Mission accomplie']],
-  perks: [['☕','Café offert',''],['🍪','Pause gourmande',''],['🎧','Choix de la playlist',''],['🪴','Bureau au choix',''],['🍦','Glace offerte',''],['🎬','Place de cinéma',''],['🍕','Pizza offerte',''],['🎁','Carte cadeau',''],['⏰','1 h de pause bonus',''],['🏆','Demi-journée offerte','']],
-  game: [['🥉','Bronze',''],['🥈','Argent',''],['🥇','Or',''],['💠','Platine',''],['💎','Diamant',''],['🎖️','Maître',''],['👑','Grand maître',''],['⚔️','Champion',''],['🐉','Légende',''],['🏆','Mythique','']]
+  gages: { steps: [['🙊','Premier tunnel','On t’a vu partir…'],['👀','Regards appuyés',''],['⏱️','Chrono activé','La prochaine fois, on minute'],['🚧','Panneau « Déviation »',''],
+    ['🎤','Micro coupé',''],['🐌','Réunion rallongée',''],['🌀','Spirale du hors-sujet',''],['🧭','Boussole perdue',''],['📢','Monologue officiel',''],['🎓','Conférence TED',''],
+    ['🚇','Ligne de métro privée',''],['🕳️','Terrier de lapin',''],['☕','Café pour le voisin','Petit acompte'],['⚠️','Dernier avertissement','Ça sent le croissant'],
+    ['🐇','Lapin blanc',''],['🗺️','Carte au trésor',''],['🎢','Montagnes russes',''],['📚','Encyclopédie vivante',''],['🔔','Alerte boulangerie','']], final: FINAL },
+  bakery: { steps: [['🍬','Bonbon',''],['🍪','Cookie',''],['🧁','Cupcake',''],['🥖','Baguette',''],['🍩','Donut',''],['🧇','Gaufre',''],['🥞','Crêpes',''],['🍫','Pain au chocolat',''],
+    ['🥨','Bretzel',''],['🍰','Part de gâteau',''],['🥧','Tarte',''],['🎂','Gâteau entier',''],['🍮','Flan',''],['🍯','Kouign-amann',''],['🧈','Beurre AOP',''],['🫓','Fougasse',''],
+    ['🍞','Brioche',''],['🥯','Bagel',''],['☕','Café crème','']], final: FINAL },
+  simple: { steps: Array.from({length:19}, (_, i) => ['🔹', `Palier ${i+1}`, '']), final: FINAL }
 };
-const CURVE = [1,2,3.4,5,7,9.4,12,15,18.4,22]; // multiplicateurs de « points par tunnel »
+function presetRows(name, n){
+  const p = PRESETS[name] || PRESETS.gages;
+  return [...p.steps.slice(0, n - 1), p.final].map(([icon, label, desc]) => ({ icon, label, desc }));
+}
+const CURVE = n => Array.from({length:n}, (_, i) => Math.max(i + 1, Math.round((i + 1) * (1 + i / n)))); // seuils progressifs
 
 /* ---------- Utilitaires ---------- */
 const $ = s => document.querySelector(s);
@@ -529,23 +546,26 @@ function applyFx(){ document.body.classList.toggle('fx-low', prefs.fx === 'low')
 
 /* ---------- Réglages : normalisation (miroir du serveur) ---------- */
 function defaultSettings(){
-  return { thresholdMode:'step', step:5,
-    rewards: PRESETS.space.map(([icon,label,desc], i) => ({icon, label, desc, threshold:(i+1)*5, color: i === 9 ? '#FFB800' : ''})),
-    daily:{enabled:true, goal:10, icon:'⚡', label:'Objectif du jour atteint'},
-    team:{mode:'avg', icon:'🛸', label:'Flotte complète au portail'}, showRanking:true };
+  return { thresholdMode:'step', step:1, tiers:15,
+    rewards: presetRows('gages', 15).map((r, i) => ({ ...r, threshold: i + 1, color: i === 14 ? '#FFB800' : '' })),
+    daily:{enabled:true, goal:3, icon:'🚨', label:'Journée tunnel'},
+    team:{mode:'avg', icon:'🥐', label:'Petit-déjeuner géant pour tout le monde'}, showRanking:true };
 }
 function normSettings(s){
-  const d = defaultSettings(); s = s || {};
+  s = s || {};
+  const tiers = clampInt(s.tiers ?? (Array.isArray(s.rewards) ? s.rewards.length : 15), 3, 20, 15);
+  const base = presetRows('gages', tiers);
+  const d = defaultSettings();
   const str = (v, max, def) => (typeof v === 'string' ? v.trim().slice(0, max) : '') || def;
   const col = v => /^#[0-9a-fA-F]{6}$/.test(v || '') ? v : '';
   let prev = 0;
   return {
     thresholdMode: s.thresholdMode === 'custom' ? 'custom' : 'step',
-    step: clampInt(s.step, 1, 10000, 5),
-    rewards: d.rewards.map((def, i) => { const r = (s.rewards || [])[i] || {};
-      const thr = Math.max(prev + 1, clampInt(r.threshold, 1, 100000, def.threshold)); prev = thr;
+    step: clampInt(s.step, 1, 10000, 1), tiers,
+    rewards: base.map((def, i) => { const r = (s.rewards || [])[i] || {};
+      const thr = Math.max(prev + 1, clampInt(r.threshold, 1, 100000, i + 1)); prev = thr;
       return { icon:str(r.icon,8,def.icon), label:str(r.label,60,def.label), desc:str(r.desc,120,''), threshold:thr, color:col(r.color) }; }),
-    daily:{ enabled:(s.daily||{}).enabled !== false, goal:clampInt((s.daily||{}).goal,1,100000,10), icon:str((s.daily||{}).icon,8,d.daily.icon), label:str((s.daily||{}).label,60,d.daily.label) },
+    daily:{ enabled:(s.daily||{}).enabled !== false, goal:clampInt((s.daily||{}).goal,1,100000,3), icon:str((s.daily||{}).icon,8,d.daily.icon), label:str((s.daily||{}).label,60,d.daily.label) },
     team:{ mode:['avg','min','max'].includes((s.team||{}).mode) ? s.team.mode : 'avg', icon:str((s.team||{}).icon,8,d.team.icon), label:str((s.team||{}).label,60,d.team.label) },
     showRanking: s.showRanking !== false
   };
@@ -563,10 +583,11 @@ function teamTier(){
   const t = S.users.map(tierOf), m = S.settings.team.mode;
   return m === 'min' ? Math.min(...t) : m === 'max' ? Math.max(...t) : Math.floor(sum(t) / t.length);
 }
-function rewardFor(u, tier){ // tier 1..10
+const NT = () => S.settings.rewards.length; // nombre de paliers
+function rewardFor(u, tier){ // tier 1..NT
   const g = S.settings.rewards[tier - 1]; const o = u && u.overrides && u.overrides[tier - 1];
   return { ...g, icon: (o && o.icon) || g.icon, label: (o && o.label) || g.label, personal: !!(o && (o.icon || o.label)),
-    color: g.color || (tier === 10 ? '#FFB800' : '') };
+    color: g.color || (tier === NT() ? '#FFB800' : '') };
 }
 const focusUser = () => S.users.find(u => u.id === prefs.focus) || null;
 const shownTier = () => { const f = focusUser(); return f ? tierOf(f) : teamTier(); };
@@ -623,7 +644,7 @@ const Local = {
     const spread = total => { const d = Array(7).fill(0); let left = total;
       for (let i = 0; i <= ti; i++){ const v = i === ti ? left : Math.min(left, Math.floor(total / (ti + 1) * (0.7 + ((i * 37) % 6) / 10))); d[i] = v; left -= v; } return d; };
     return { week: weekIdLocal(), settings: defaultSettings(), history: [], rev: 0,
-      users: [['Louise','#00F0FF',47],['Karim','#c77dff',31],['Inès','#2dff9a',18],['Théo','#ff6bd6',7]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
+      users: [['Louise','#00F0FF',13],['Karim','#c77dff',9],['Inès','#2dff9a',5],['Théo','#ff6bd6',2]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
   },
   snapshot(){ return JSON.parse(JSON.stringify({ ...Local.db, today: todayIdxLocal(), boot: 'local', server: false })); },
   commit(event){ Local.db.rev++; lsSet(LS_KEY, Local.db); apply(Local.snapshot(), event); return Promise.resolve({}); },
@@ -710,36 +731,41 @@ const FX = (() => {
     for (const p of parts){
       p.vy += p.g; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
       ctx.save(); ctx.globalAlpha = Math.min(1, p.life / 30); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
-      if (p.star){ ctx.beginPath(); ctx.arc(0,0,p.s/2,0,7); ctx.fill(); } else ctx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
+      if (p.emoji){ ctx.font = (p.s * 2.6) + 'px serif'; ctx.textAlign = 'center'; ctx.fillText(p.emoji, 0, 0); }
+      else if (p.star){ ctx.beginPath(); ctx.arc(0,0,p.s/2,0,7); ctx.fill(); } else ctx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
       ctx.restore();
     }
     raf = parts.length ? requestAnimationFrame(loop) : 0;
   }
   return {
-    burst(x, y, colors, n = 80, power = 9){
+    burst(x, y, colors, n = 80, power = 9, emoji){
       n = Math.round(n * fxMul()); if (!n) return;
       for (let i = 0; i < n; i++){ const a = Math.random() * Math.PI * 2, v = Math.random() * power + 2;
         parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 4, g: .22, r: Math.random() * 6, vr: (Math.random() - .5) * .4, s: 6 + Math.random() * 6,
-          c: colors[i % colors.length], life: 80 + Math.random() * 60, star: Math.random() < .3 }); }
+          c: colors[i % colors.length], life: 80 + Math.random() * 60, star: Math.random() < .3, emoji: emoji && i % 4 === 0 ? emoji : null }); }
       if (!raf) loop();
     }
   };
 })();
 
-/* --- Tunnel : construction des anneaux --- */
-const rings = [];
-for (let i = 1; i <= 10; i++){
-  const s = 1 - (i - 1) * 0.085, el = document.createElement('div');
-  el.className = 'ring n' + i;
-  el.style.setProperty('--s', s.toFixed(3));
-  el.style.setProperty('--dur', (14 + i * 3.2) + 's');
-  el.style.setProperty('--sat', (5 + i * 1.3) + 's');
-  el.style.setProperty('--dir', i % 2 ? 'normal' : 'reverse');
-  el.innerHTML = `<div class="boost"><svg viewBox="0 0 100 100" aria-hidden="true">
-      <circle class="ticks" cx="50" cy="50" r="49"/><circle class="main" cx="50" cy="50" r="46.5"/><circle class="seg" cx="50" cy="50" r="43.5"/>
-      <g class="orbit"><circle class="sat" cx="50" cy="3.5" r="1.4"/><circle class="sat" cx="50" cy="96.5" r=".9"/></g></svg>
-      <div class="shock"></div></div><span class="lbl">T${i}</span>`;
-  $('#tunnel').appendChild(el); rings.push(el);
+/* --- Tunnel : construction des anneaux (un par palier) --- */
+let rings = [];
+function buildRings(n){
+  if (rings.length === n) return;
+  $('#tunnel').innerHTML = ''; rings = [];
+  for (let i = 1; i <= n; i++){
+    const s = 1 - (i - 1) * (0.78 / (n - 1)), el = document.createElement('div');
+    el.className = 'ring' + (i === n ? ' last' : '') + (i % 2 ? '' : ' lbl-b');
+    el.style.setProperty('--s', s.toFixed(3));
+    el.style.setProperty('--dur', (14 + i * 32 / n) + 's');
+    el.style.setProperty('--sat', (5 + i * 13 / n) + 's');
+    el.style.setProperty('--dir', i % 2 ? 'normal' : 'reverse');
+    el.innerHTML = `<div class="boost"><svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="ticks" cx="50" cy="50" r="49"/><circle class="main" cx="50" cy="50" r="46.5"/><circle class="seg" cx="50" cy="50" r="43.5"/>
+        <g class="orbit"><circle class="sat" cx="50" cy="3.5" r="1.4"/><circle class="sat" cx="50" cy="96.5" r=".9"/></g></svg>
+        <div class="shock"></div></div><span class="lbl">${i === n ? '🥐 ' : ''}${i}</span>`;
+    $('#tunnel').appendChild(el); rings.push(el);
+  }
 }
 const warp = Warp($('#warp'), { speed: 0.5, count: 240 });
 const hyperWarp = Warp($('#hyperCanvas'), { speed: 14, count: 420, trail: true, thick: 3, gold: true });
@@ -793,13 +819,14 @@ function centerOf(el){ const b = el.getBoundingClientRect(); return [b.left + b.
 let hyperTimer;
 function hyperspace(u){
   const h = $('#hyper');
-  const rw = u ? rewardFor(u, 10) : { icon: S.settings.team.icon, label: S.settings.team.label };
-  $('#hyperName').textContent = u ? `${u.name} atteint le Tunnel 10` : 'Toute l’équipe atteint le Tunnel 10';
+  const rw = u ? rewardFor(u, NT()) : { icon: S.settings.team.icon, label: S.settings.team.label };
+  $('#hyperTitle').textContent = u ? `${thresholds()[NT() - 1]} TUNNELS !` : 'TOUTE L’ÉQUIPE !';
+  $('#hyperName').textContent = u ? `${u.name} est de corvée :` : 'Toute l’équipe a atteint le dernier palier :';
   $('#hyperReward').textContent = rw.icon + ' ' + rw.label;
   h.querySelectorAll('.flash').forEach(e => e.remove());
   h.classList.add('show');
   if (fxMul()){ const f = document.createElement('div'); f.className = 'flash'; h.appendChild(f); hyperWarp.resize(); hyperWarp.show(); hyperWarp.start(); }
-  setTimeout(() => FX.burst(innerWidth / 2, innerHeight / 2, ['#FFB800','#fff','#00F0FF','#7B2CBF', u ? u.color : '#FFB800'], 260, 16), 700);
+  setTimeout(() => FX.burst(innerWidth / 2, innerHeight / 2, ['#FFB800','#fff','#00F0FF','#7B2CBF', u ? u.color : '#FFB800'], 260, 16, rw.icon), 700);
   clearTimeout(hyperTimer); hyperTimer = setTimeout(closeHyper, 6500);
 }
 function closeHyper(){ $('#hyper').classList.remove('show'); hyperWarp.stop(); }
@@ -831,7 +858,7 @@ function apply(next, event, fromStream){
     }
     if (u && S.settings.daily.enabled && event.day === S.today){
       const before = u.days[S.today] - event.delta;
-      if (before < S.settings.daily.goal && u.days[S.today] >= S.settings.daily.goal) toast(`${S.settings.daily.icon} ${u.name} : ${S.settings.daily.label}`, '#2dff9a');
+      if (before < S.settings.daily.goal && u.days[S.today] >= S.settings.daily.goal) toast(`${S.settings.daily.icon} ${u.name} : ${S.settings.daily.label}`, '#ff9f43');
     }
   }
   if (quiet) return;
@@ -840,15 +867,15 @@ function apply(next, event, fromStream){
     const a = prevTiers[u.id] ?? 0, b = tierOf(u);
     if (b > a){
       const rw = rewardFor(u, b);
-      if (b === 10 && !hyperDone){ hyperspace(u); hyperDone = true; }
+      if (b === NT() && !hyperDone){ hyperspace(u); hyperDone = true; }
       else {
-        toast(`${u.name} déverrouille le Tunnel ${b} : ${rw.icon} ${rw.label}`, rw.color || u.color);
+        toast(`${u.name} passe le palier ${b} : ${rw.icon} ${rw.label}`, rw.color || u.color);
         const card = document.querySelector(`.card[data-id="${u.id}"] .reward-badge`);
-        if (card){ const [x, y] = centerOf(card); FX.burst(x, y, [u.color, '#fff', rw.color || '#00F0FF'], 70); }
+        if (card){ const [x, y] = centerOf(card); FX.burst(x, y, [u.color, '#fff', rw.color || '#00F0FF'], 70, 9, rw.icon); }
       }
     }
   }
-  if (!hyperDone && teamTier() === 10 && prevTeam < 10) hyperspace(null);
+  if (!hyperDone && teamTier() === NT() && prevTeam < NT()) hyperspace(null);
   const st = shownTier(); if (st > prevShown) for (let t = prevShown + 1; t <= st; t++) setTimeout(() => ignite(t), (t - prevShown - 1) * 120);
 }
 
@@ -867,74 +894,77 @@ function render(){
 }
 
 function renderTunnel(){
-  const t = shownTier(), f = focusUser();
+  const t = shownTier(), f = focusUser(), N = NT();
+  buildRings(N);
+  $('#tierMax').textContent = N;
+  const fin = S.settings.rewards[N - 1];
+  $('#goalBadge').innerHTML = `${esc(fin.icon)} à <b>${thresholds()[N - 1]} tunnels</b>`;
   rings.forEach((r, i) => { r.classList.toggle('on', i < t); r.classList.toggle('current', i === t - 1); });
-  $('#stage').classList.toggle('max', t >= 10);
+  $('#stage').classList.toggle('max', t >= N);
   $('#rays').style.setProperty('--lvl', t);
   $('#coreVal').textContent = t;
-  $('#coreLbl').textContent = t >= 10 ? 'Portail ouvert' : 'Tunnels';
+  $('#coreLbl').textContent = t >= N ? 'Croissants !' : 'Palier';
   $('#tierNow').textContent = t;
   const modeLbl = { avg:'moyenne', min:'minimum', max:'meilleur' }[S.settings.team.mode];
   $('#tunnelMode').textContent = f ? '◉ ' + f.name : `Équipe (${modeLbl})`;
   if (f){
-    const rest = t >= 10 ? 0 : thresholds()[t] - weekTotal(f);
-    $('#tierNext').textContent = t >= 10 ? 'Mission accomplie' : `T${t+1} dans ${rest} pt${rest > 1 ? 's' : ''}`;
-  } else $('#tierNext').textContent = t >= 10 ? 'Mission accomplie' : `T${t+1} (palier ${modeLbl})`;
+    const rest = t >= N ? 0 : thresholds()[t] - weekTotal(f);
+    $('#tierNext').textContent = t >= N ? '🥐 Croissants dus !' : `palier ${t+1} dans ${rest} tunnel${rest > 1 ? 's' : ''}`;
+  } else $('#tierNext').textContent = t >= N ? '🥐 Croissants dus !' : `palier ${t+1} (${modeLbl})`;
   $('#legend').innerHTML = `<button type="button" data-focus="" class="${f ? '' : 'sel'}"><span class="sw" style="--pc:#fff"></span>Équipe</button>` +
-    S.users.map(u => `<button type="button" data-focus="${u.id}" class="${prefs.focus === u.id ? 'sel' : ''}"><span class="sw" style="--pc:${u.color}"></span>${esc(u.name)} · T${tierOf(u)}</button>`).join('');
+    S.users.map(u => `<button type="button" data-focus="${u.id}" class="${prefs.focus === u.id ? 'sel' : ''}"><span class="sw" style="--pc:${u.color}"></span>${esc(u.name)} · ${weekTotal(u)}</button>`).join('');
 }
 
 function renderRewards(){
   const thr = thresholds();
   $('#rewards').innerHTML = S.settings.rewards.map((r, i) => {
-    const holders = S.users.filter(u => tierOf(u) >= i + 1), col = r.color || (i === 9 ? '#FFB800' : '');
+    const holders = S.users.filter(u => tierOf(u) >= i + 1), col = r.color || (i === NT() - 1 ? '#FFB800' : '');
     return `<li class="rw ${holders.length ? 'on' : ''}" ${col ? `style="--rc:${col}"` : ''}>
       <span class="ic">${esc(r.icon)}</span>
-      <span class="nm">${esc(r.label)}<small>TUNNEL ${i+1} · ${thr[i]} PTS${r.desc ? ' · ' + esc(r.desc) : ''}</small></span>
+      <span class="nm">${esc(r.label)}<small>PALIER ${i+1} · ${thr[i]} TUNNEL${thr[i] > 1 ? 'S' : ''}${r.desc ? ' · ' + esc(r.desc) : ''}</small></span>
       <span class="who">${holders.map(u => `<span class="sw" title="${esc(u.name)}${rewardFor(u, i+1).personal ? ' : ' + esc(rewardFor(u, i+1).label) : ''}" style="--pc:${u.color}"></span>`).join('')}</span></li>`;
   }).join('');
   const d = S.settings.daily, tm = S.settings.team, dailyOk = S.users.filter(u => todayVal(u) >= d.goal);
   $('#bonus').innerHTML =
-    (d.enabled ? `<div class="rw ${dailyOk.length ? 'on' : ''}" style="--rc:#2dff9a"><span class="ic">${esc(d.icon)}</span>
-      <span class="nm">${esc(d.label)}<small>${d.goal} PTS / JOUR · ${dailyOk.length}/${S.users.length}</small></span></div>` : '') +
-    `<div class="rw ${teamTier() >= 10 ? 'on' : ''}" style="--rc:#FFB800"><span class="ic">${esc(tm.icon)}</span>
-      <span class="nm">${esc(tm.label)}<small>ÉQUIPE · PALIER ${teamTier()}/10</small></span></div>`;
+    (d.enabled ? `<div class="rw ${dailyOk.length ? 'on' : ''}" style="--rc:#ff9f43"><span class="ic">${esc(d.icon)}</span>
+      <span class="nm">${esc(d.label)}<small>${d.goal} TUNNELS DANS LA JOURNÉE · ${dailyOk.length}/${S.users.length}</small></span></div>` : '') +
+    `<div class="rw ${teamTier() >= NT() ? 'on' : ''}" style="--rc:#FFB800"><span class="ic">${esc(tm.icon)}</span>
+      <span class="nm">${esc(tm.label)}<small>ÉQUIPE · PALIER ${teamTier()}/${NT()}</small></span></div>`;
 }
 
 function cardHTML(u, lead){
-  const t = tierOf(u), wt = weekTotal(u), thr = thresholds();
-  const lo = t ? thr[t-1] : 0, hi = t >= 10 ? lo : thr[t];
-  const p = t >= 10 ? 1 : (wt - lo) / (hi - lo);
-  const rw = t ? rewardFor(u, t) : null, next = t < 10 ? rewardFor(u, t + 1) : null;
+  const t = tierOf(u), wt = weekTotal(u), thr = thresholds(), N = NT();
+  const goal = thr[N - 1], p = Math.min(1, wt / goal), left = Math.max(0, goal - wt);
+  const rw = t ? rewardFor(u, t) : null, next = t < N ? rewardFor(u, t + 1) : null;
   const d = S.settings.daily, tv = todayVal(u);
   return `<article class="panel card ${prefs.focus === u.id ? 'sel' : ''} ${lead ? 'leader' : ''}" data-id="${u.id}" style="--pc:${u.color}">
     <div class="card-head">
-      <div><div class="card-name"><span class="sw"></span>${esc(u.name)}${lead ? ' <span class="crown" title="En tête de la semaine">👑</span>' : ''}</div><div class="grade">${GRADES[t]}</div></div>
+      <div><div class="card-name"><span class="sw"></span>${esc(u.name)}${lead ? ' <span class="crown" title="Roi du tunnel de la semaine">👑</span>' : ''}</div><div class="grade">${gradeOf(t, N)}</div></div>
       <div class="card-actions">
         <button class="icon-btn" data-act="focus" aria-label="Afficher ${esc(u.name)} dans le tunnel" title="Suivre dans le tunnel">◎</button>
         <button class="icon-btn" data-act="edit" aria-label="Modifier ${esc(u.name)}" title="Modifier et récompenses personnelles">✎</button>
         <button class="icon-btn" data-act="del" aria-label="Supprimer ${esc(u.name)}" title="Supprimer">✕</button>
       </div>
     </div>
-    <div class="counter"><span class="val" data-from="${shownVals[u.id] ?? tv}" data-to="${tv}">${shownVals[u.id] ?? tv}</span><span class="unit">aujourd'hui</span></div>
-    <div class="week">Semaine : <b>${wt}</b> pts · Palier <b>${t}</b>/10</div>
+    <div class="counter"><span class="val" data-from="${shownVals[u.id] ?? tv}" data-to="${tv}">${shownVals[u.id] ?? tv}</span><span class="unit">tunnels aujourd'hui</span></div>
+    <div class="week">Semaine : <b>${wt}</b> tunnel${wt > 1 ? 's' : ''} · Palier <b>${t}</b>/${N}</div>
     <div class="ctrls">
-      <button class="minus" data-act="add" data-n="-1" aria-label="Retirer 1 point à ${esc(u.name)}">−1</button>
-      <button data-act="add" data-n="1" aria-label="Ajouter 1 point à ${esc(u.name)}">+1</button>
-      <button data-act="add" data-n="5" aria-label="Ajouter 5 points à ${esc(u.name)}">+5</button>
+      <button class="minus" data-act="add" data-n="-1" aria-label="Retirer 1 tunnel à ${esc(u.name)}">−1</button>
+      <button data-act="add" data-n="1" aria-label="Ajouter 1 tunnel à ${esc(u.name)}">+1</button>
+      <button data-act="add" data-n="5" aria-label="Ajouter 5 tunnels à ${esc(u.name)}">+5</button>
       <input type="number" min="0" inputmode="numeric" value="${tv}" data-act="set" aria-label="Saisie directe du score du jour de ${esc(u.name)}">
     </div>
-    <div class="prog-lbl"><span>${t >= 10 ? 'Portail atteint' : `Vers T${t+1} · ${esc(next.icon)} ${esc(next.label)}`}</span><span>${Math.round(Math.max(0, Math.min(1, p)) * 100)}%</span></div>
-    <div class="prog"><i style="--p:${Math.max(0, Math.min(1, p)).toFixed(3)}"></i></div>
-    ${rw ? `<div class="reward-badge ${t >= 10 ? 'gold' : ''}" ${rw.color ? `style="--rc:${rw.color}"` : ''}><span class="ic">${esc(rw.icon)}</span><div><small>Tunnel ${t} débloqué${rw.personal ? ' · perso' : ''}</small>${esc(rw.label)}${rw.desc ? `<em>${esc(rw.desc)}</em>` : ''}</div></div>`
-         : `<div class="reward-badge none"><span class="ic">🔒</span><div><small>Aucun tunnel</small>Encore ${thr[0] - wt} pt(s) pour T1</div></div>`}
-    ${d.enabled ? `<div class="daily ${tv >= d.goal ? 'ok' : ''}">${tv >= d.goal ? esc(d.icon) + ' ' + esc(d.label) : `Objectif du jour : ${tv}/${d.goal}`}</div>` : ''}
+    <div class="prog-lbl"><span>${t >= N ? `${esc(rewardFor(u, N).icon)} À payer !` : `Prochain : ${esc(next.icon)} ${esc(next.label)}`}</span><span>${t >= N ? wt + '/' + goal : `${esc(rewardFor(u, N).icon)} dans ${left}`}</span></div>
+    <div class="prog"><i style="--p:${p.toFixed(3)}"></i></div>
+    ${rw ? `<div class="reward-badge ${t >= N ? 'gold' : ''}" ${rw.color ? `style="--rc:${rw.color}"` : ''}><span class="ic">${esc(rw.icon)}</span><div><small>${t >= N ? 'À payer' : 'Palier ' + t}${rw.personal ? ' · perso' : ''}</small>${esc(rw.label)}${rw.desc ? `<em>${esc(rw.desc)}</em>` : ''}</div></div>`
+         : `<div class="reward-badge none"><span class="ic">😇</span><div><small>Aucun palier</small>Clean pour l'instant</div></div>`}
+    ${d.enabled ? `<div class="daily ${tv >= d.goal ? 'alert' : ''}">${tv >= d.goal ? esc(d.icon) + ' ' + esc(d.label) : `Aujourd'hui : ${tv}/${d.goal} avant alerte`}</div>` : ''}
   </article>`;
 }
 function renderCards(){
   const lead = S.settings.showRanking ? leaderId() : null;
   $('#cards').innerHTML = S.users.map(u => cardHTML(u, u.id === lead)).join('') +
-    `<button class="panel add-card" type="button" data-act="new"><div><span>＋</span>Ajouter un astronaute</div></button>`;
+    `<button class="panel add-card" type="button" data-act="new"><div><span>＋</span>Ajouter un participant</div></button>`;
   // compteur animé
   document.querySelectorAll('.counter .val').forEach(el => {
     const from = +el.dataset.from, to = +el.dataset.to, id = el.closest('.card').dataset.id;
@@ -954,14 +984,14 @@ function sorted(){
 function renderTable(){
   const ti = S.today;
   $('#thead').innerHTML = `<th>Utilisateur</th>` + DAYS.map((d,i) => `<th class="${i === ti ? 'today' : ''}">${d}</th>`).join('') +
-    `<th>Aujourd'hui</th><th>Semaine</th><th>Palier /10</th><th>Récompense</th>`;
+    `<th>Aujourd'hui</th><th>Semaine</th><th>Palier /${NT()}</th><th>Gage</th>`;
   $('#tbody').innerHTML = sorted().map((u, r) => {
     const t = tierOf(u), rw = t ? rewardFor(u, t) : null;
     return `<tr data-id="${u.id}" class="${prefs.focus === u.id ? 'sel' : ''}" style="--pc:${u.color}">
       <td><span class="rank">${r+1}</span><span class="sw" style="margin-right:8px"></span>${esc(u.name)}</td>
       ${u.days.map((v,i) => `<td class="${i === ti ? 'today' : ''}"><input type="number" min="0" value="${v}" data-day="${i}" aria-label="${esc(u.name)} ${DAYS[i]}"></td>`).join('')}
       <td class="total">${todayVal(u)}</td><td class="total">${weekTotal(u)}</td>
-      <td><span class="tier-pill"><span class="mini">${Array.from({length:10}, (_,i) => `<i class="${i < t ? 'on' : ''} ${i === 9 ? 'g' : ''}"></i>`).join('')}</span>${t}</span></td>
+      <td><span class="tier-pill"><span class="mini">${Array.from({length:NT()}, (_,i) => `<i class="${i < t ? 'on' : ''} ${i === NT() - 1 ? 'g' : ''}"></i>`).join('')}</span>${t}</span></td>
       <td>${rw ? esc(rw.icon + ' ' + rw.label) : '—'}</td></tr>`;
   }).join('');
   const dayTot = DAYS.map((_, i) => sum(S.users.map(u => u.days[i])));
@@ -971,7 +1001,7 @@ function renderTable(){
   const hist = [...(S.history || [])].reverse().concat([{ week: S.week, total: sum(dayTot), cur: true }]);
   const max = Math.max(1, ...hist.map(h => h.total));
   $('#history').innerHTML = hist.length > 1 ? `<span style="align-self:center;margin-right:6px">HISTORIQUE</span>` +
-    hist.map(h => `<div class="bar" title="${esc(h.week)} : ${h.total} pts"><span>${h.total}</span><i style="--h:${(h.total / max).toFixed(3)};${h.cur ? '' : 'opacity:.55'}"></i><span>${esc(h.week.split('-')[1])}</span></div>`).join('') : '';
+    hist.map(h => `<div class="bar" title="${esc(h.week)} : ${h.total} tunnels"><span>${h.total}</span><i style="--h:${(h.total / max).toFixed(3)};${h.cur ? '' : 'opacity:.55'}"></i><span>${esc(h.week.split('-')[1])}</span></div>`).join('') : '';
 }
 
 /* =====================================================================
@@ -1012,12 +1042,12 @@ $('#sort').addEventListener('change', e => { prefs.sort = e.target.value; savePr
 let editing = null;
 function openUser(u){
   editing = u; const f = $('#formUser');
-  $('#dlgUserTitle').textContent = u ? 'Modifier l’astronaute' : 'Nouvel astronaute';
+  $('#dlgUserTitle').textContent = u ? 'Modifier le participant' : 'Nouveau participant';
   f.name.value = u ? u.name : '';
   f.color.value = u ? u.color : PALETTE[S.users.length % PALETTE.length];
   $('#ovEdit').innerHTML = S.settings.rewards.map((r, i) => { const o = (u && u.overrides && u.overrides[i]) || {};
-    return `<div class="ov-row"><span>T${i+1}</span><input type="text" maxlength="8" data-i="${i}" data-k="icon" placeholder="${esc(r.icon)}" value="${esc(o.icon || '')}" aria-label="Icône personnelle tunnel ${i+1}">
-      <input type="text" maxlength="60" data-i="${i}" data-k="label" placeholder="${esc(r.label)}" value="${esc(o.label || '')}" aria-label="Récompense personnelle tunnel ${i+1}"></div>`; }).join('');
+    return `<div class="ov-row"><span>${i+1}</span><input type="text" maxlength="8" data-i="${i}" data-k="icon" placeholder="${esc(r.icon)}" value="${esc(o.icon || '')}" aria-label="Icône personnelle palier ${i+1}">
+      <input type="text" maxlength="60" data-i="${i}" data-k="label" placeholder="${esc(r.label)}" value="${esc(o.label || '')}" aria-label="Gage personnel palier ${i+1}"></div>`; }).join('');
   $('#dlgUser').returnValue = ''; $('#dlgUser').showModal(); f.name.focus();
 }
 $('#dlgUser').addEventListener('close', () => {
@@ -1026,18 +1056,18 @@ $('#dlgUser').addEventListener('close', () => {
   const overrides = {};
   $('#ovEdit').querySelectorAll('input').forEach(inp => { const v = inp.value.trim(); if (v) (overrides[inp.dataset.i] ||= {})[inp.dataset.k] = v; });
   const data = { name, color: f.color.value, overrides };
-  run(async () => { if (editing) await store.updateUser(editing.id, data); else await store.addUser(data); toast(editing ? 'Profil mis à jour' : `${name} rejoint l’équipage`); });
+  run(async () => { if (editing) await store.updateUser(editing.id, data); else await store.addUser(data); toast(editing ? 'Profil mis à jour' : `${name} rejoint la réunion`); });
 });
 
 /* --- Dialogue réglages --- */
 function rwRows(list, mode, step){
-  return `<div class="rw-row head"><span>#</span><span>Icône</span><span>Récompense</span><span class="desc">Description</span><span>Seuil</span><span class="col">Couleur</span></div>` +
-    list.map((r, i) => `<div class="rw-row" data-i="${i}"><span class="t">T${i+1}</span>
-      <input type="text" maxlength="8" data-k="icon" value="${esc(r.icon)}" aria-label="Icône tunnel ${i+1}">
-      <input type="text" maxlength="60" data-k="label" value="${esc(r.label)}" aria-label="Libellé tunnel ${i+1}">
-      <input class="desc" type="text" maxlength="120" data-k="desc" value="${esc(r.desc)}" placeholder="optionnel" aria-label="Description tunnel ${i+1}">
-      <input type="number" min="1" data-k="threshold" value="${mode === 'step' ? (i + 1) * step : r.threshold}" ${mode === 'step' ? 'disabled' : ''} aria-label="Seuil tunnel ${i+1}">
-      <input class="col" type="color" data-k="color" value="${r.color || (i === 9 ? '#FFB800' : '#00F0FF')}" data-set="${r.color ? 1 : 0}" aria-label="Couleur tunnel ${i+1}"></div>`).join('');
+  return `<div class="rw-row head"><span>#</span><span>Icône</span><span>Gage</span><span class="desc">Description</span><span>Tunnels</span><span class="col">Couleur</span></div>` +
+    list.map((r, i) => `<div class="rw-row" data-i="${i}"><span class="t">${i+1}</span>
+      <input type="text" maxlength="8" data-k="icon" value="${esc(r.icon)}" aria-label="Icône palier ${i+1}">
+      <input type="text" maxlength="60" data-k="label" value="${esc(r.label)}" aria-label="Gage palier ${i+1}">
+      <input class="desc" type="text" maxlength="120" data-k="desc" value="${esc(r.desc)}" placeholder="optionnel" aria-label="Description palier ${i+1}">
+      <input type="number" min="1" data-k="threshold" value="${mode === 'step' ? (i + 1) * step : r.threshold}" ${mode === 'step' ? 'disabled' : ''} aria-label="Tunnels pour le palier ${i+1}">
+      <input class="col" type="color" data-k="color" value="${r.color || (i === list.length - 1 ? '#FFB800' : '#00F0FF')}" data-set="${r.color ? 1 : 0}" aria-label="Couleur palier ${i+1}"></div>`).join('');
 }
 function readRows(){
   return [...$('#rwEdit').querySelectorAll('.rw-row[data-i]')].map(row => {
@@ -1048,7 +1078,7 @@ function readRows(){
 }
 function openSettings(){
   const f = $('#formSettings'), s = S.settings;
-  f.thresholdMode.value = s.thresholdMode; f.step.value = s.step;
+  f.thresholdMode.value = s.thresholdMode; f.step.value = s.step; f.tiers.value = s.tiers;
   f.dailyEnabled.checked = s.daily.enabled; f.dailyGoal.value = s.daily.goal; f.dailyIcon.value = s.daily.icon; f.dailyLabel.value = s.daily.label;
   f.teamMode.value = s.team.mode; f.teamIcon.value = s.team.icon; f.teamLabel.value = s.team.label;
   f.showRanking.checked = s.showRanking; f.fx.value = prefs.fx; f.token.value = prefs.token || '';
@@ -1058,16 +1088,24 @@ function openSettings(){
 $('#btnSettings').addEventListener('click', openSettings);
 $('#rwEdit').addEventListener('input', e => { if (e.target.type === 'color') e.target.dataset.set = '1'; });
 $('#formSettings').addEventListener('change', e => {
-  if (e.target.name === 'thresholdMode' || e.target.name === 'step'){
-    const f = $('#formSettings'); const rows = readRows();
+  if (['thresholdMode','step','tiers'].includes(e.target.name)){
+    const f = $('#formSettings'); let rows = readRows();
+    const n = clampInt(f.tiers.value, 3, 20, 15); f.tiers.value = n;
+    if (rows.length !== n){ // on garde les paliers saisis, le dernier reste la tournée
+      const last = rows[rows.length - 1], fill = presetRows('gages', 20);
+      const mid = rows.slice(0, -1).slice(0, n - 1);
+      while (mid.length < n - 1) mid.push({ ...fill[mid.length], threshold: 0, color: '' });
+      rows = [...mid, last];
+      let prev = 0; rows.forEach(r => { r.threshold = Math.max(prev + 1, r.threshold || 0); prev = r.threshold; });
+    }
     $('#rwEdit').innerHTML = rwRows(rows, f.thresholdMode.value, clampInt(f.step.value, 1, 10000, 5));
   }
 });
 $('#formSettings').addEventListener('click', e => {
   const b = e.target.closest('[data-preset],[data-curve]'); if (!b) return;
   const f = $('#formSettings'), rows = readRows(), step = clampInt(f.step.value, 1, 10000, 5);
-  if (b.dataset.preset) PRESETS[b.dataset.preset].forEach(([icon, label, desc], i) => Object.assign(rows[i], { icon, label, desc }));
-  if (b.dataset.curve){ f.thresholdMode.value = 'custom'; rows.forEach((r, i) => r.threshold = Math.max(i + 1, Math.round(CURVE[i] * step))); }
+  if (b.dataset.preset) presetRows(b.dataset.preset, rows.length).forEach((r, i) => Object.assign(rows[i], r));
+  if (b.dataset.curve){ f.thresholdMode.value = 'custom'; const c = CURVE(rows.length); rows.forEach((r, i) => r.threshold = c[i] * step); }
   $('#rwEdit').innerHTML = rwRows(rows, f.thresholdMode.value, step);
 });
 $('#dlgSettings').addEventListener('close', () => {
@@ -1075,7 +1113,7 @@ $('#dlgSettings').addEventListener('close', () => {
   const f = $('#formSettings');
   prefs.fx = f.fx.value; prefs.token = f.token.value.trim(); savePrefs(); applyFx();
   if (prefs.fx === 'low') warp.stop(); else warp.start();
-  const settings = { thresholdMode: f.thresholdMode.value, step: f.step.value, rewards: readRows(),
+  const settings = { thresholdMode: f.thresholdMode.value, step: f.step.value, tiers: f.tiers.value, rewards: readRows(),
     daily: { enabled: f.dailyEnabled.checked, goal: f.dailyGoal.value, icon: f.dailyIcon.value, label: f.dailyLabel.value },
     team: { mode: f.teamMode.value, icon: f.teamIcon.value, label: f.teamLabel.value }, showRanking: f.showRanking.checked };
   run(async () => { await store.saveSettings(settings); toast('Réglages enregistrés'); });

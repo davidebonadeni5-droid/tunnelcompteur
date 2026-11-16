@@ -2,7 +2,7 @@
   "name": "tunnel-compteur",
   "version": "2.0.0",
   "private": true,
-  "description": "Compteur de performance partagé avec 10 tunnels de récompenses (Node + SQLite, sans dépendance).",
+  "description": "Compteur partagé des tunnels (digressions) de la semaine, tournée de croissants au dernier palier (Node + SQLite, sans dépendance).",
   "main": "server.js",
   "engines": { "node": ">=22.5" },
   "scripts": {

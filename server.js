@@ -1,6 +1,6 @@
 'use strict';
 /*
- * Tunnel Compteur — serveur HTTP + base SQLite partagée + synchro temps réel (SSE).
+ * Tunnel Compteur — compteur partagé des « tunnels » (digressions) : serveur HTTP + SQLite + synchro temps réel (SSE).
  * Aucune dépendance npm : node:http, node:sqlite (Node ≥ 22.5).
  */
 const http = require('node:http');
@@ -40,17 +40,17 @@ function weekId(d = new Date()) {
 }
 
 /* ---------- Réglages par défaut ---------- */
+const STEPS = [['🙊','Premier tunnel','On t’a vu partir…'],['👀','Regards appuyés',''],['⏱️','Chrono activé','La prochaine fois, on minute'],['🚧','Panneau « Déviation »',''],
+  ['🎤','Micro coupé',''],['🐌','Réunion rallongée',''],['🌀','Spirale du hors-sujet',''],['🧭','Boussole perdue',''],['📢','Monologue officiel',''],['🎓','Conférence TED',''],
+  ['🚇','Ligne de métro privée',''],['🕳️','Terrier de lapin',''],['☕','Café pour le voisin','Petit acompte'],['⚠️','Dernier avertissement','Ça sent le croissant'],
+  ['🐇','Lapin blanc',''],['🗺️','Carte au trésor',''],['🎢','Montagnes russes',''],['📚','Encyclopédie vivante',''],['🔔','Alerte boulangerie','']];
+const FINAL = ['🥐', 'Tournée de croissants', 'Pour toute l’équipe !'];
+const baseRewards = n => [...STEPS.slice(0, n - 1), FINAL].map(([icon, label, desc], i) => ({ icon, label, desc, threshold: i + 1, color: i === n - 1 ? '#FFB800' : '' }));
 const DEFAULT_SETTINGS = {
-  thresholdMode: 'step', step: 5,
-  rewards: [
-    ['🛰️', 'Satellite d’argent', 'Premier signal capté'], ['🚀', 'Décollage réussi', 'Le moteur est lancé'],
-    ['🌙', 'Orbite lunaire', 'Rythme de croisière'], ['☄️', 'Chasseur de comètes', 'Ça accélère'],
-    ['🪐', 'Anneaux de Saturne', 'Mi-parcours'], ['🌌', 'Voie lactée', 'Au-delà du système'],
-    ['🔭', 'Œil de Hubble', 'Vision longue portée'], ['👨‍🚀', 'Sortie extravéhiculaire', 'Hors de la capsule'],
-    ['🌠', 'Pluie d’étoiles', 'Dernière ligne droite'], ['🏆', 'Portail d’or NASA', 'Mission accomplie']
-  ].map(([icon, label, desc], i) => ({ icon, label, desc, threshold: (i + 1) * 5, color: i === 9 ? '#FFB800' : '' })),
-  daily: { enabled: true, goal: 10, icon: '⚡', label: 'Objectif du jour atteint' },
-  team: { mode: 'avg', icon: '🛸', label: 'Flotte complète au portail' },
+  thresholdMode: 'step', step: 1, tiers: 15,
+  rewards: baseRewards(15),
+  daily: { enabled: true, goal: 3, icon: '🚨', label: 'Journée tunnel' },
+  team: { mode: 'avg', icon: '🥐', label: 'Petit-déjeuner géant pour tout le monde' },
   showRanking: true
 };
 
@@ -66,8 +66,9 @@ function sanitizeSettings(s) {
   const d = DEFAULT_SETTINGS;
   s = s && typeof s === 'object' ? s : {};
   const rw = Array.isArray(s.rewards) ? s.rewards : [];
+  const tiers = int(s.tiers ?? (rw.length || d.tiers), 3, 20, d.tiers);
   let prev = 0;
-  const rewards = d.rewards.map((def, i) => {
+  const rewards = baseRewards(tiers).map((def, i) => {
     const r = rw[i] || {};
     const thr = Math.max(prev + 1, int(r.threshold, 1, 100000, def.threshold)); prev = thr;
     return { icon: str(r.icon, 8, def.icon), label: str(r.label, 60, def.label), desc: str(r.desc, 120, ''),
@@ -76,7 +77,7 @@ function sanitizeSettings(s) {
   const daily = s.daily || {}, team = s.team || {};
   return {
     thresholdMode: s.thresholdMode === 'custom' ? 'custom' : 'step',
-    step: int(s.step, 1, 10000, d.step),
+    step: int(s.step, 1, 10000, d.step), tiers,
     rewards,
     daily: { enabled: daily.enabled !== false, goal: int(daily.goal, 1, 100000, d.daily.goal),
       icon: str(daily.icon, 8, d.daily.icon), label: str(daily.label, 60, d.daily.label) },
@@ -88,7 +89,7 @@ function sanitizeSettings(s) {
 function sanitizeOverrides(o) {
   const out = {};
   if (!o || typeof o !== 'object') return out;
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 20; i++) {
     const r = o[i] || o[String(i)];
     if (!r) continue;
     const icon = str(r.icon, 8), label = str(r.label, 60);
@@ -130,7 +131,7 @@ function seedDemo() {
   tx(() => {
     db.exec('DELETE FROM scores; DELETE FROM users;');
     const ti = todayIdx();
-    [['Louise', '#00F0FF', 47], ['Karim', '#c77dff', 31], ['Inès', '#2dff9a', 18], ['Théo', '#ff6bd6', 7]].forEach(([name, c, total], p) => {
+    [['Louise', '#00F0FF', 13], ['Karim', '#c77dff', 9], ['Inès', '#2dff9a', 5], ['Théo', '#ff6bd6', 2]].forEach(([name, c, total], p) => {
       const id = uid();
       db.prepare('INSERT INTO users(id, name, color, position) VALUES(?,?,?,?)').run(id, name, c, p);
       let left = total;

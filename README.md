@@ -1,6 +1,6 @@
 # Tunnel Compteur
 
-Compteur de performance hebdomadaire **partagé** avec système de récompenses (10 tunnels), thème salle de contrôle spatiale.
+Compteur **partagé** des « tunnels » de la semaine : chaque fois que quelqu'un part sur un sujet sans importance, on lui compte un tunnel. Chaque palier débloque un gage, et au dernier (15 tunnels par défaut) : **🥐 tournée de croissants**.
 
 ## Lancer
 
@@ -38,18 +38,18 @@ Ouvrir directement `public/index.html` : l'application passe en **mode local** (
 
 ## Fonctionnalités
 
-- **Cartes utilisateur** : `+1`, `+5`, `−1`, saisie directe, grade, barre de progression, récompense débloquée, objectif du jour, couronne du leader.
-- **Vue télémétrie** : Lun→Dim éditables, tri, clic sur une ligne pour suivre l'utilisateur dans le tunnel, historique des semaines précédentes.
-- **Tunnel provoqué** : 10 anneaux SVG en perspective qui suivent la souris, champ d'étoiles en distorsion (canvas), onde de choc et rafale de particules à chaque ajout, allumage des anneaux en cascade, confettis à chaque récompense, hyperespace doré plein écran au Tunnel 10, sur **tous** les écrans connectés.
-- **Réglages des récompenses** :
-  - paliers à pas fixe ou seuils personnalisés par tunnel (+ courbe progressive en un clic) ;
-  - icône, libellé, description et couleur de chacune des 10 récompenses ;
-  - 3 thèmes prêts à l'emploi : spatial, récompenses concrètes, rangs de jeu ;
-  - objectif quotidien avec sa récompense ;
-  - récompense d'équipe, palier d'équipe calculé sur la moyenne, le minimum ou le maximum ;
-  - **récompenses personnelles** par utilisateur (✎ sur la carte) ;
+- **Cartes participant** : `+1`, `+5`, `−1`, saisie directe, titre humoristique (de « Concis » à « Boulanger officiel »), distance jusqu'aux croissants, gage en cours, alerte « journée tunnel », couronne du roi du tunnel.
+- **Tableau de la semaine** : Lun→Dim éditables, tri, clic sur une ligne pour suivre la personne dans le tunnel, historique des semaines précédentes.
+- **Tunnel provoqué** : un anneau par palier (15 par défaut), champ d'étoiles en mouvement, onde de choc et particules à chaque tunnel ajouté, confettis à chaque palier, écran plein de croissants au dernier palier, sur **tous** les écrans connectés.
+- **Réglages des paliers et des gages** :
+  - nombre de paliers (3 à 20), un tunnel par palier ou un pas fixe, ou seuils libres (+ courbe progressive en un clic) ;
+  - icône, libellé, description et couleur de chaque palier ;
+  - 3 thèmes prêts à l'emploi : gages & croissants, boulangerie, sobre ;
+  - alerte du jour (N tunnels dans la journée) ;
+  - gage d'équipe, palier d'équipe calculé sur la moyenne, le minimum ou le maximum ;
+  - **gages personnels** par participant (✎ sur la carte, ex. pains au chocolat au lieu de croissants) ;
   - intensité des effets par écran (maximum / normale / réduite).
-- **Données** : export / import JSON, données d'exemple, réinitialisation de la semaine. Les scores sont conservés semaine par semaine dans la base.
+- **Données** : export / import JSON, données d'exemple, réinitialisation de la semaine. Les compteurs sont conservés semaine par semaine dans la base.
 
 ## API
 
