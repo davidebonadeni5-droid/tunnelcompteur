@@ -131,7 +131,7 @@ function seedDemo() {
   tx(() => {
     db.exec('DELETE FROM scores; DELETE FROM users;');
     const ti = todayIdx();
-    [['Louise', '#00F0FF', 13], ['Karim', '#c77dff', 9], ['Inès', '#2dff9a', 5], ['Théo', '#ff6bd6', 2]].forEach(([name, c, total], p) => {
+    [['Davide', '#00F0FF', 13], ['Mathieu', '#c77dff', 9], ['Bryan', '#2dff9a', 5], ['Victor', '#ff6bd6', 2], ['Maeva', '#ffd166', 0], ['Anton', '#4cc9f0', 0]].forEach(([name, c, total], p) => {
       const id = uid();
       db.prepare('INSERT INTO users(id, name, color, position) VALUES(?,?,?,?)').run(id, name, c, p);
       let left = total;

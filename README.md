@@ -10,7 +10,8 @@ Compteur **partagé** des « tunnels » de la semaine : chaque fois que quelqu'u
 docker compose up -d --build
 ```
 
-Ouvrir http://localhost:8080 : tous les écrans connectés voient les mêmes scores, mis à jour en direct.
+Ouvrir http://localhost:8090 : tous les écrans connectés voient les mêmes scores, mis à jour en direct.
+Le port est lié à `127.0.0.1` : l'application n'est accessible que depuis la machine elle-même (passer par un reverse proxy pour l'ouvrir au réseau).
 La base SQLite est stockée dans le volume `tunnel-data` et survit aux redémarrages et aux mises à jour.
 
 ### Sans Docker

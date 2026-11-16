@@ -7,7 +7,7 @@
 <meta name="description" content="Compteur partagé des tunnels (digressions) de la semaine — tournée de croissants au dernier palier.">
 <style>
 :root{
-  --bg:#0B0D17; --panel:rgba(16,22,42,.75); --panel-solid:#10162a;
+  --bg:#0B0D17; --panel:rgba(16,22,42,.88); --panel-solid:#10162a;
   --cyan:#00F0FF; --violet:#7B2CBF; --gold:#FFB800; --red:#ff4d6d; --green:#2dff9a;
   --text:#e6f1ff; --muted:#8a9bbd; --line:rgba(0,240,255,.18);
   --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   background-image:radial-gradient(1px 1px at 10% 20%,#fff8,transparent 60%),radial-gradient(1px 1px at 70% 80%,#fff6,transparent 60%),
     radial-gradient(1.5px 1.5px at 40% 60%,#9ff8,transparent 60%),radial-gradient(1px 1px at 85% 15%,#fff7,transparent 60%),
     radial-gradient(1px 1px at 25% 85%,#fff5,transparent 60%),radial-gradient(1px 1px at 55% 35%,#fff6,transparent 60%);
-  background-size:420px 420px;animation:drift 120s linear infinite;opacity:.8}
+  background-size:420px 420px;opacity:.8}
 @keyframes drift{to{transform:translateY(-420px)}}
 .wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:20px 16px 60px}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -36,19 +36,18 @@ body.shake .wrap{animation:shake .4s cubic-bezier(.36,.07,.19,.97)}
 header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:20px}
 .brand small{display:block;font-family:var(--mono);font-size:.72rem;letter-spacing:.3em;color:var(--cyan);opacity:.85;text-transform:uppercase}
 h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;font-size:clamp(1.35rem,3.6vw,2.4rem);text-transform:uppercase;
-  background:linear-gradient(90deg,#fff,var(--cyan) 40%,var(--violet) 60%,#fff 80%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 12px rgba(0,240,255,.35));animation:sheen 8s linear infinite}
+  background:linear-gradient(90deg,#fff,var(--cyan) 45%,var(--violet) 75%,#fff);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:none}
 @keyframes sheen{to{background-position:-250% 0}}
 .status{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1.6s ease-in-out infinite}
 .dot.off{background:var(--gold);box-shadow:0 0 10px var(--gold)}
 .dot.err{background:var(--red);box-shadow:0 0 10px var(--red)}
 @keyframes blink{50%{opacity:.25;transform:scale(.7)}}
 .badge b{color:var(--gold);font-weight:700}
 
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);contain:paint;
   box-shadow:0 0 0 1px rgba(255,255,255,.02) inset,0 20px 50px -20px rgba(0,0,0,.7)}
 .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}
 .section-title h2{margin:0;font-family:var(--mono);font-size:.9rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan)}
@@ -69,36 +68,41 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .tunnel-panel{padding:18px;position:relative;overflow:hidden}
 .tunnel-meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:.78rem;color:var(--muted)}
 .tunnel-meta strong{color:var(--text)}
-.tunnel-stage{position:relative;width:min(100%,540px);aspect-ratio:1;margin:8px auto 0;perspective:900px;touch-action:pan-y}
+.tunnel-stage{position:relative;width:min(100%,540px);aspect-ratio:1;margin:8px auto 0;touch-action:pan-y}
 .tunnel-stage canvas.warp{position:absolute;inset:-12%;width:124%;height:124%;pointer-events:none;
-  -webkit-mask-image:radial-gradient(circle,#000 45%,transparent 70%);mask-image:radial-gradient(circle,#000 45%,transparent 70%)}
-.tunnel{position:absolute;inset:0;transform-style:preserve-3d;transform:rotateX(calc(14deg + var(--rx,0deg))) rotateY(var(--ry,0deg));transition:transform .6s cubic-bezier(.2,.8,.2,1)}
+}
+.tunnel{position:absolute;inset:0;--mx:0px;--my:0px}
 .rays{position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1;margin:-35% 0 0 -35%;border-radius:50%;pointer-events:none;
   background:repeating-conic-gradient(from 0deg,rgba(0,240,255,.16) 0 2deg,transparent 2deg 15deg);
   -webkit-mask-image:radial-gradient(circle,#000 10%,transparent 70%);mask-image:radial-gradient(circle,#000 10%,transparent 70%);
-  opacity:calc(.15 + var(--lvl,0) * .07);animation:spin 40s linear infinite}
+  opacity:calc(.15 + var(--lvl,0) * .05);will-change:transform;animation:spin 60s linear infinite}
 .tunnel-stage.max .rays{background:repeating-conic-gradient(from 0deg,rgba(255,184,0,.3) 0 3deg,transparent 3deg 12deg);animation-duration:14s}
-.ring{position:absolute;inset:0;transform:scale(var(--s));will-change:transform}
+.ring{position:absolute;inset:0;--tx:calc(var(--mx) * var(--d));--ty:calc(var(--my) * var(--d));transform:translate(var(--tx),var(--ty)) scale(var(--s));transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .ring .boost{width:100%;height:100%;position:relative}
-.ring svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;animation:spin var(--dur,30s) linear infinite;animation-direction:var(--dir,normal)}
+.ring svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ring.on svg{will-change:transform;animation:spin var(--dur,30s) linear infinite;animation-direction:var(--dir,normal)}
 .ring circle{fill:none;stroke:rgba(138,155,189,.26);stroke-width:1;transition:stroke .5s,stroke-width .5s}
 .ring .ticks{stroke-dasharray:.6 2.4;stroke-width:2.2;opacity:.6}
 .ring .main{stroke-dasharray:2 4}
 .ring .seg{stroke-dasharray:22 9 5 9;stroke-width:.7}
 .ring .sat{fill:rgba(138,155,189,.4);stroke:none;transition:fill .5s}
-.ring .orbit{transform-origin:50px 50px;animation:spin var(--sat,9s) linear infinite reverse}
+.ring .orbit{transform-origin:50px 50px}
+.ring.on .orbit{animation:spin var(--sat,9s) linear infinite reverse}
 .ring.on .main,.ring.on .seg,.ring.on .ticks{stroke:url(#gradOn)}
-.ring.on .main{stroke-width:1.7;stroke-dasharray:none;filter:drop-shadow(0 0 2.5px var(--cyan))}
-.ring.on .seg{animation:dash 5s linear infinite;stroke-width:1.1}
-.ring.on .sat{fill:#fff;filter:drop-shadow(0 0 3px var(--cyan))}
-.ring.on.last .main,.ring.on.last .seg,.ring.on.last .ticks{stroke:var(--gold);filter:drop-shadow(0 0 4px var(--gold))}
-.ring.on.last .sat{filter:drop-shadow(0 0 4px var(--gold))}
+.ring.on .main{stroke-width:1.7;stroke-dasharray:none}
+.ring.current .main{filter:drop-shadow(0 0 2.5px var(--cyan))}
+.ring.on .seg{stroke-width:1.1}
+.ring.current .seg{animation:dash 5s linear infinite}
+.ring.on .sat{fill:#fff}
+.ring.on.last .main,.ring.on.last .seg,.ring.on.last .ticks{stroke:var(--gold)}
+.ring.on.last .main{filter:drop-shadow(0 0 4px var(--gold))}
+
 .ring.current .main{stroke-width:2.8}
 .ring.current{animation:breathe 2.4s ease-in-out infinite}
 .ring .lbl{position:absolute;left:50%;top:-1%;transform:translate(-50%,-50%) scale(calc(1 / var(--s)));font-family:var(--mono);font-size:10px;padding:1px 6px;
   border-radius:6px;background:var(--bg);border:1px solid rgba(138,155,189,.3);color:var(--muted);white-space:nowrap;transition:color .4s,border-color .4s}
 .ring.lbl-b .lbl{top:101%}
-.ring.on .lbl{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(0,240,255,.4)}
+.ring.on .lbl{color:var(--cyan);border-color:var(--cyan)}
 .ring.last.on .lbl{color:var(--gold);border-color:var(--gold);box-shadow:0 0 12px rgba(255,184,0,.6)}
 .ring .shock{position:absolute;inset:0;border-radius:50%;opacity:0;pointer-events:none;border:2px solid var(--pc,var(--cyan));
   box-shadow:0 0 18px var(--pc,var(--cyan)),inset 0 0 18px var(--pc,var(--cyan))}
@@ -109,14 +113,14 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .ring.lbl-b.ignite .lbl{animation:none}
 @keyframes spin{to{transform:rotateZ(360deg)}}
 @keyframes dash{to{stroke-dashoffset:-90}}
-@keyframes breathe{50%{transform:scale(calc(var(--s) * 1.025))}}
+@keyframes breathe{50%{transform:translate(var(--tx),var(--ty)) scale(calc(var(--s) * 1.025))}}
 @keyframes shock{0%{opacity:0;transform:scale(.88)}25%{opacity:1}100%{opacity:0;transform:scale(1.14)}}
 @keyframes boost{from{transform:rotateZ(0)}to{transform:rotateZ(var(--boostDeg,240deg))}}
-@keyframes ignite{0%{transform:scale(calc(var(--s) * 1.2));opacity:0;filter:brightness(4)}60%{opacity:1;filter:brightness(2)}100%{transform:scale(var(--s));filter:none}}
+@keyframes ignite{0%{transform:translate(var(--tx),var(--ty)) scale(calc(var(--s) * 1.2));opacity:0}60%{opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(var(--s))}}
 @keyframes lblpop{0%{transform:translate(-50%,-50%) scale(calc(2.4 / var(--s)))}100%{transform:translate(-50%,-50%) scale(calc(1 / var(--s)))}}
 
 .core{position:absolute;left:50%;top:50%;width:18%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(0,240,255,.35) 35%,rgba(123,44,191,.15) 65%,transparent 72%);animation:corepulse 3s ease-in-out infinite}
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(0,240,255,.35) 35%,rgba(123,44,191,.15) 65%,transparent 72%);will-change:transform,opacity;animation:corepulse 3s ease-in-out infinite}
 .core.flash::after{content:"";position:absolute;inset:-60%;border-radius:50%;background:radial-gradient(circle,var(--pc,#fff),transparent 60%);animation:coreflash .7s ease-out forwards}
 @keyframes coreflash{from{opacity:1;transform:scale(.4)}to{opacity:0;transform:scale(1.6)}}
 .tunnel-stage.max .core{background:radial-gradient(circle,#fff,rgba(255,184,0,.75) 35%,rgba(255,184,0,.2) 60%,transparent 72%)}
@@ -142,9 +146,9 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .rw .nm small{display:block;font-family:var(--mono);font-size:.64rem;color:var(--muted);letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rw .who{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:70px}
 .rw.on{opacity:1;border-color:color-mix(in srgb,var(--rc,var(--cyan)) 45%,transparent);background:color-mix(in srgb,var(--rc,var(--cyan)) 6%,transparent)}
-.rw.on .ic{filter:none;animation:glowic 2.8s ease-in-out infinite}
+.rw.on .ic{filter:none}
 .rw.on::after,.reward-badge::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.12) 50%,transparent 60%);
-  transform:translateX(-100%);animation:shimmer 4.5s ease-in-out infinite;pointer-events:none}
+  transform:translateX(-100%);will-change:transform;animation:shimmer 7s ease-in-out infinite;pointer-events:none}
 @keyframes shimmer{60%,100%{transform:translateX(100%)}}
 @keyframes glowic{50%{filter:drop-shadow(0 0 6px var(--rc,var(--cyan)))}}
 .bonus{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -157,10 +161,10 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .card::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--pc),transparent)}
 .card:hover{transform:translateY(-2px)}
 .card.sel{border-color:var(--pc);box-shadow:0 0 0 1px var(--pc),0 0 28px -6px var(--pc)}
-.card.leader{border-color:rgba(255,184,0,.55);animation:leadglow 3s ease-in-out infinite}
+.card.leader{border-color:rgba(255,184,0,.55);box-shadow:0 0 0 1px rgba(255,184,0,.35),0 0 26px -8px var(--gold)}
 @keyframes leadglow{50%{box-shadow:0 0 0 1px rgba(255,184,0,.5),0 0 32px -6px var(--gold)}}
 .card.pop{animation:pop .45s ease}
-.card.leader.pop{animation:pop .45s ease,leadglow 3s ease-in-out infinite}
+
 @keyframes pop{40%{transform:scale(1.03)}}
 .crown{font-size:.9rem;filter:drop-shadow(0 0 6px var(--gold))}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -182,7 +186,7 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .ctrls input{width:100%;min-width:0;padding:8px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.3);font-family:var(--mono);text-align:center}
 .prog{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
 .prog i{display:block;height:100%;width:100%;transform-origin:left;transform:scaleX(var(--p));transition:transform .7s cubic-bezier(.2,.8,.2,1);
-  background:linear-gradient(90deg,var(--violet),var(--pc),#fff);background-size:200% 100%;animation:flow 2.5s linear infinite}
+  background:linear-gradient(90deg,var(--violet),var(--pc))}
 @keyframes flow{to{background-position:-200% 0}}
 .prog-lbl span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .prog-lbl span:last-child{white-space:nowrap}
@@ -194,7 +198,7 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .reward-badge em{display:block;font-style:normal;font-size:.72rem;color:var(--muted)}
 .reward-badge.none{border-style:dashed;background:none;opacity:.6}
 .reward-badge.none::after{display:none}
-.reward-badge.gold{--rc:var(--gold);animation:goldglow 2s ease-in-out infinite}
+.reward-badge.gold{--rc:var(--gold);box-shadow:0 0 18px -6px var(--gold)}
 @keyframes goldglow{50%{box-shadow:0 0 22px -4px var(--gold)}}
 .daily{margin-top:8px;font-family:var(--mono);font-size:.7rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 .daily.alert{color:#ff9f43;text-shadow:0 0 8px rgba(255,159,67,.5)}
@@ -301,7 +305,7 @@ dialog input:disabled{opacity:.45}
 
 @media (max-width:520px){.counter .val{font-size:2.5rem}.badge{font-size:.7rem;padding:7px 11px}.ring .lbl{font-size:7px;padding:0 4px}}
 body.fx-low *,body.fx-low *::before,body.fx-low *::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
-body.fx-low .ring svg,body.fx-low .ring .orbit,body.fx-low .rays{animation:none!important}
+body.fx-low .ring.on svg,body.fx-low .ring.on .orbit,body.fx-low .rays{animation:none!important}
 </style>
 </head>
 <body>
@@ -644,7 +648,7 @@ const Local = {
     const spread = total => { const d = Array(7).fill(0); let left = total;
       for (let i = 0; i <= ti; i++){ const v = i === ti ? left : Math.min(left, Math.floor(total / (ti + 1) * (0.7 + ((i * 37) % 6) / 10))); d[i] = v; left -= v; } return d; };
     return { week: weekIdLocal(), settings: defaultSettings(), history: [], rev: 0,
-      users: [['Louise','#00F0FF',13],['Karim','#c77dff',9],['Inès','#2dff9a',5],['Théo','#ff6bd6',2]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
+      users: [['Davide','#00F0FF',13],['Mathieu','#c77dff',9],['Bryan','#2dff9a',5],['Victor','#ff6bd6',2],['Maeva','#ffd166',0],['Anton','#4cc9f0',0]].map(([name,color,t]) => ({ id: uid(), name, color, overrides:{}, days: spread(t) })) };
   },
   snapshot(){ return JSON.parse(JSON.stringify({ ...Local.db, today: todayIdxLocal(), boot: 'local', server: false })); },
   commit(event){ Local.db.rev++; lsSet(LS_KEY, Local.db); apply(Local.snapshot(), event); return Promise.resolve({}); },
@@ -689,11 +693,11 @@ function Warp(canvas, opts = {}){
   const ctx = canvas.getContext('2d'); let w = 0, h = 0, dpr = 1, stars = [], speed = opts.speed || 0.5, target = speed, visible = true, raf = 0;
   const N = opts.count || 260;
   const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); w = canvas.clientWidth; h = canvas.clientHeight; canvas.width = w * dpr; canvas.height = h * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
-  const spawn = (s = {}) => Object.assign(s, { x:(Math.random()-.5)*2, y:(Math.random()-.5)*2, z:Math.random()*0.9+0.1, pz:0, c: s.c && Math.random() < .5 ? s.c : null });
+  const spawn = (s = {}) => Object.assign(s, { x:(Math.random()-.5)*2, y:(Math.random()-.5)*2, z:Math.random()*0.9+0.1, pz:0, c: s.c && Math.random() < .5 ? s.c : null, g: Math.random() < .3 });
   for (let i = 0; i < N; i++) stars.push(spawn());
   function frame(){
     raf = requestAnimationFrame(frame);
-    if (!visible || !w) return;
+    if (!visible || !w || document.hidden) return;
     speed += (target - speed) * 0.05; target += ((opts.speed || 0.5) - target) * 0.02;
     ctx.fillStyle = opts.trail ? 'rgba(5,6,12,.28)' : 'rgba(0,0,0,0)';
     if (opts.trail) ctx.fillRect(0,0,w,h); else ctx.clearRect(0,0,w,h);
@@ -703,9 +707,11 @@ function Warp(canvas, opts = {}){
       if (s.z <= 0.02){ spawn(s); s.z = 1; s.pz = 1; continue; }
       const x = cx + s.x / s.z * f * .5, y = cy + s.y / s.z * f * .5, px = cx + s.x / s.pz * f * .5, py = cy + s.y / s.pz * f * .5;
       if (x < 0 || x > w || y < 0 || y > h){ spawn(s); s.z = 1; continue; }
-      const a = Math.min(1, (1 - s.z) * 1.4);
-      ctx.strokeStyle = s.c || (opts.gold && Math.random() < .3 ? '#FFB800' : `rgba(200,240,255,${a})`);
-      ctx.globalAlpha = s.c ? a : 1;
+      const rr = Math.hypot(x - cx, y - cy) / (Math.min(w, h) * .5);
+      const a = Math.min(1, (1 - s.z) * 1.4) * (opts.fade ? Math.max(0, 1 - Math.max(0, rr - .55) / .35) : 1);
+      if (a <= 0.02) continue;
+      ctx.strokeStyle = s.c || (opts.gold && s.g ? '#FFB800' : '#c8f0ff');
+      ctx.globalAlpha = a;
       ctx.lineWidth = Math.max(.6, (1 - s.z) * (opts.thick || 2.2));
       ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(x, y); ctx.stroke();
     }
@@ -757,6 +763,7 @@ function buildRings(n){
     const s = 1 - (i - 1) * (0.78 / (n - 1)), el = document.createElement('div');
     el.className = 'ring' + (i === n ? ' last' : '') + (i % 2 ? '' : ' lbl-b');
     el.style.setProperty('--s', s.toFixed(3));
+    el.style.setProperty('--d', ((i - 1) / (n - 1)).toFixed(3));
     el.style.setProperty('--dur', (14 + i * 32 / n) + 's');
     el.style.setProperty('--sat', (5 + i * 13 / n) + 's');
     el.style.setProperty('--dir', i % 2 ? 'normal' : 'reverse');
@@ -767,7 +774,7 @@ function buildRings(n){
     $('#tunnel').appendChild(el); rings.push(el);
   }
 }
-const warp = Warp($('#warp'), { speed: 0.5, count: 240 });
+const warp = Warp($('#warp'), { speed: 0.5, count: 140, fade: true });
 const hyperWarp = Warp($('#hyperCanvas'), { speed: 14, count: 420, trail: true, thick: 3, gold: true });
 
 // Parallaxe : le tunnel suit le pointeur
@@ -775,9 +782,10 @@ $('#stage').addEventListener('pointermove', e => {
   if (prefs.fx === 'low') return;
   const r = e.currentTarget.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
-  $('#tunnel').style.setProperty('--ry', (x * 22).toFixed(1) + 'deg'); $('#tunnel').style.setProperty('--rx', (-y * 18).toFixed(1) + 'deg');
+  const amp = r.width * 0.09; // les anneaux profonds se décalent plus : effet de profondeur
+  $('#tunnel').style.setProperty('--mx', (x * amp).toFixed(1) + 'px'); $('#tunnel').style.setProperty('--my', (y * amp).toFixed(1) + 'px');
 });
-$('#stage').addEventListener('pointerleave', () => { $('#tunnel').style.setProperty('--ry','0deg'); $('#tunnel').style.setProperty('--rx','0deg'); });
+$('#stage').addEventListener('pointerleave', () => { $('#tunnel').style.setProperty('--mx','0px'); $('#tunnel').style.setProperty('--my','0px'); });
 
 /* --- Onde de choc « tunnel provoqué » --- */
 function provoke(color, amount){
