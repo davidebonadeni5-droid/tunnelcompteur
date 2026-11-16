@@ -44,6 +44,7 @@ Ouvrir directement `public/index.html` : l'application passe en **mode local** (
 - **Tunnel provoqué** : un anneau par palier (15 par défaut), champ d'étoiles en mouvement, onde de choc et particules à chaque tunnel ajouté, confettis à chaque palier, écran plein de croissants au dernier palier, sur **tous** les écrans connectés.
 - **Réglages des paliers et des gages** :
   - nombre de paliers (3 à 20), un tunnel par palier ou un pas fixe, ou seuils libres (+ courbe progressive en un clic) ;
+  - après la tournée : **on recommence au palier 1** (15 → tournée n°1, 30 → tournée n°2…, compteur 🥐×N sur la carte) ou on reste bloqué jusqu'au lundi ;
   - icône, libellé, description et couleur de chaque palier ;
   - 3 thèmes prêts à l'emploi : gages & croissants, boulangerie, sobre ;
   - alerte du jour (N tunnels dans la journée) ;

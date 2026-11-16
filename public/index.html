@@ -169,6 +169,7 @@ body.fx-max .rw.on::after,body.fx-max .reward-badge::after{display:block;will-ch
 
 @keyframes pop{40%{transform:scale(1.03)}}
 .crown{font-size:.9rem;filter:drop-shadow(0 0 6px var(--gold))}
+.rounds{display:inline-flex;align-items:center;margin-left:6px;padding:1px 7px;border-radius:999px;font-family:var(--mono);font-size:.72rem;font-weight:700;color:var(--gold);border:1px solid rgba(255,184,0,.5);background:rgba(255,184,0,.1)}
 .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .card-name{font-weight:700;font-size:1.05rem;display:flex;align-items:center;gap:8px;word-break:break-word}
 .grade{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:#b48bff;margin-top:3px}
@@ -432,7 +433,15 @@ body.fx-low .ring.on svg,body.fx-low .ring.on .orbit,body.fx-low .rays{animation
       </label>
       <label>Tunnels par palier (pas fixe)<input type="number" name="step" min="1" max="10000"></label>
     </div>
-    <label>Nombre de paliers (le dernier = la tournée)<input type="number" name="tiers" min="3" max="20"></label>
+    <div class="grid2">
+      <label>Nombre de paliers (le dernier = la tournée)<input type="number" name="tiers" min="3" max="20"></label>
+      <label>Après la tournée
+        <select name="afterFinal">
+          <option value="cycle">On recommence au palier 1 (nouvelle tournée à chaque tour)</option>
+          <option value="stop">On reste bloqué sur la tournée jusqu'au lundi</option>
+        </select>
+      </label>
+    </div>
 
     <h4>Les paliers</h4>
     <div class="presets">
@@ -560,7 +569,7 @@ function defaultSettings(){
   return { thresholdMode:'step', step:1, tiers:15,
     rewards: presetRows('gages', 15).map((r, i) => ({ ...r, threshold: i + 1, color: i === 14 ? '#FFB800' : '' })),
     daily:{enabled:true, goal:3, icon:'🚨', label:'Journée tunnel'},
-    team:{mode:'avg', icon:'🥐', label:'Petit-déjeuner géant pour tout le monde'}, showRanking:true };
+    team:{mode:'avg', icon:'🥐', label:'Petit-déjeuner géant pour tout le monde'}, showRanking:true, afterFinal:'cycle' };
 }
 function normSettings(s){
   s = s || {};
@@ -578,7 +587,8 @@ function normSettings(s){
       return { icon:str(r.icon,8,def.icon), label:str(r.label,60,def.label), desc:str(r.desc,120,''), threshold:thr, color:col(r.color) }; }),
     daily:{ enabled:(s.daily||{}).enabled !== false, goal:clampInt((s.daily||{}).goal,1,100000,3), icon:str((s.daily||{}).icon,8,d.daily.icon), label:str((s.daily||{}).label,60,d.daily.label) },
     team:{ mode:['avg','min','max'].includes((s.team||{}).mode) ? s.team.mode : 'avg', icon:str((s.team||{}).icon,8,d.team.icon), label:str((s.team||{}).label,60,d.team.label) },
-    showRanking: s.showRanking !== false
+    showRanking: s.showRanking !== false,
+    afterFinal: s.afterFinal === 'stop' ? 'stop' : 'cycle'
   };
 }
 
@@ -588,7 +598,16 @@ const weekTotal = u => sum(u.days);
 const todayVal = u => u.days[S.today];
 const thresholds = () => S.settings.thresholdMode === 'step' ? S.settings.rewards.map((_, i) => (i + 1) * S.settings.step) : S.settings.rewards.map(r => r.threshold);
 function tierOfTotal(total){ return thresholds().filter(t => total >= t).length; }
-const tierOf = u => tierOfTotal(weekTotal(u));
+// Cycle : après la tournée, on repart au palier 1. 15 → tournée n°1 ; 16 → palier 1 du 2e tour ; 30 → tournée n°2…
+const goalOf = () => thresholds()[NT() - 1];
+const cycling = () => S.settings.afterFinal !== 'stop';
+function rounds(u){ const w = weekTotal(u), g = goalOf(); return cycling() ? Math.floor(w / g) : (w >= g ? 1 : 0); } // tournées dues
+function cycleTotal(u){
+  const w = weekTotal(u), g = goalOf();
+  if (!cycling() || w <= g) return w;
+  return w % g === 0 ? g : w % g;
+}
+const tierOf = u => tierOfTotal(cycleTotal(u));
 function teamTier(){
   if (!S.users.length) return 0;
   const t = S.users.map(tierOf), m = S.settings.team.mode;
@@ -602,6 +621,7 @@ function rewardFor(u, tier){ // tier 1..NT
 }
 const focusUser = () => S.users.find(u => u.id === prefs.focus) || null;
 const shownTier = () => { const f = focusUser(); return f ? tierOf(f) : teamTier(); };
+function roundsBadge(u){ const r = rounds(u); return r ? `<span class="rounds" title="Tournées dues cette semaine">${esc(rewardFor(u, NT()).icon)}×${r}</span>` : ''; }
 function leaderId(){ if (!S.users.length) return null; const best = [...S.users].sort((a,b) => weekTotal(b) - weekTotal(a))[0]; return weekTotal(best) > 0 ? best.id : null; }
 
 /* =====================================================================
@@ -870,8 +890,9 @@ let hyperTimer;
 function hyperspace(u){
   const h = $('#hyper');
   const rw = u ? rewardFor(u, NT()) : { icon: S.settings.team.icon, label: S.settings.team.label };
-  $('#hyperTitle').textContent = u ? `${thresholds()[NT() - 1]} TUNNELS !` : 'TOUTE L’ÉQUIPE !';
-  $('#hyperName').textContent = u ? `${u.name} est de corvée :` : 'Toute l’équipe a atteint le dernier palier :';
+  const nr = u ? rounds(u) : 0;
+  $('#hyperTitle').textContent = u ? `${weekTotal(u)} TUNNELS !` : 'TOUTE L’ÉQUIPE !';
+  $('#hyperName').textContent = u ? `${u.name} est de corvée${nr > 1 ? ` (tournée n°${nr} cette semaine)` : ''} :` : 'Toute l’équipe a atteint le dernier palier :';
   $('#hyperReward').textContent = rw.icon + ' ' + rw.label;
   h.querySelectorAll('.flash').forEach(e => e.remove());
   h.classList.add('show');
@@ -891,6 +912,7 @@ function apply(next, event, fromStream){
   if (S && next.boot === S.boot && next.rev <= S.rev) return; // déjà appliqué
   const prev = S;
   const prevTiers = prev ? Object.fromEntries(prev.users.map(u => [u.id, tierOf(u)])) : {};
+  const prevRounds = prev ? Object.fromEntries(prev.users.map(u => [u.id, rounds(u)])) : {};
   const prevTeam = prev ? teamTier() : 0;
   const prevShown = prev ? shownTier() : 0;
   S = next; S.settings = normSettings(S.settings);
@@ -915,6 +937,7 @@ function apply(next, event, fromStream){
   let hyperDone = false;
   for (const u of S.users){
     const a = prevTiers[u.id] ?? 0, b = tierOf(u);
+    if (rounds(u) > (prevRounds[u.id] ?? 0)){ if (!hyperDone){ hyperspace(u); hyperDone = true; } continue; } // nouvelle tournée (même en sautant 15 avec +5)
     if (b > a){
       const rw = rewardFor(u, b);
       if (b === NT() && !hyperDone){ hyperspace(u); hyperDone = true; }
@@ -984,12 +1007,13 @@ function renderRewards(){
 
 function cardHTML(u, lead){
   const t = tierOf(u), wt = weekTotal(u), thr = thresholds(), N = NT();
-  const goal = thr[N - 1], p = Math.min(1, wt / goal), left = Math.max(0, goal - wt);
+  const ct = cycleTotal(u), goal = thr[N - 1], p = Math.min(1, ct / goal), left = Math.max(0, goal - ct), nr = rounds(u);
+  const fin = rewardFor(u, N);
   const rw = t ? rewardFor(u, t) : null, next = t < N ? rewardFor(u, t + 1) : null;
   const d = S.settings.daily, tv = todayVal(u);
   return `<article class="panel card ${prefs.focus === u.id ? 'sel' : ''} ${lead ? 'leader' : ''}" data-id="${u.id}" style="--pc:${u.color}">
     <div class="card-head">
-      <div><div class="card-name"><span class="sw"></span>${esc(u.name)}${lead ? ' <span class="crown" title="Roi du tunnel de la semaine">👑</span>' : ''}</div><div class="grade">${gradeOf(t, N)}</div></div>
+      <div><div class="card-name"><span class="sw"></span>${esc(u.name)}${roundsBadge(u)}${lead ? ' <span class="crown" title="Roi du tunnel de la semaine">👑</span>' : ''}</div><div class="grade">${gradeOf(t, N)}</div></div>
       <div class="card-actions">
         <button class="icon-btn" data-act="focus" aria-label="Afficher ${esc(u.name)} dans le tunnel" title="Suivre dans le tunnel">◎</button>
         <button class="icon-btn" data-act="edit" aria-label="Modifier ${esc(u.name)}" title="Modifier et récompenses personnelles">✎</button>
@@ -997,16 +1021,17 @@ function cardHTML(u, lead){
       </div>
     </div>
     <div class="counter"><span class="val" data-from="${shownVals[u.id] ?? tv}" data-to="${tv}">${shownVals[u.id] ?? tv}</span><span class="unit">tunnels aujourd'hui</span></div>
-    <div class="week">Semaine : <b>${wt}</b> tunnel${wt > 1 ? 's' : ''} · Palier <b>${t}</b>/${N}</div>
+    <div class="week">Semaine : <b>${wt}</b> tunnel${wt > 1 ? 's' : ''} · Palier <b>${t}</b>/${N}${cycling() && wt > goal ? ` · tour ${Math.floor((wt - 1) / goal) + 1}` : ''}</div>
     <div class="ctrls">
       <button class="minus" data-act="add" data-n="-1" aria-label="Retirer 1 tunnel à ${esc(u.name)}">−1</button>
       <button data-act="add" data-n="1" aria-label="Ajouter 1 tunnel à ${esc(u.name)}">+1</button>
       <button data-act="add" data-n="5" aria-label="Ajouter 5 tunnels à ${esc(u.name)}">+5</button>
       <input type="number" min="0" inputmode="numeric" value="${tv}" data-act="set" aria-label="Saisie directe du score du jour de ${esc(u.name)}">
     </div>
-    <div class="prog-lbl"><span>${t >= N ? `${esc(rewardFor(u, N).icon)} À payer !` : `Prochain : ${esc(next.icon)} ${esc(next.label)}`}</span><span>${t >= N ? wt + '/' + goal : `${esc(rewardFor(u, N).icon)} dans ${left}`}</span></div>
+    <div class="prog-lbl"><span>${t >= N ? `${esc(fin.icon)} À payer !${cycling() ? ' Le prochain tunnel relance un tour' : ''}` : `Prochain : ${esc(next.icon)} ${esc(next.label)}`}</span><span>${t >= N ? ct + '/' + goal : `${esc(fin.icon)}${nr ? ' n°' + (nr + 1) : ''} dans ${left}`}</span></div>
     <div class="prog"><i style="--p:${p.toFixed(3)}"></i></div>
-    ${rw ? `<div class="reward-badge ${t >= N ? 'gold' : ''}" ${rw.color ? `style="--rc:${rw.color}"` : ''}><span class="ic">${esc(rw.icon)}</span><div><small>${t >= N ? 'À payer' : 'Palier ' + t}${rw.personal ? ' · perso' : ''}</small>${esc(rw.label)}${rw.desc ? `<em>${esc(rw.desc)}</em>` : ''}</div></div>`
+    ${rw ? `<div class="reward-badge ${t >= N ? 'gold' : ''}" ${rw.color ? `style="--rc:${rw.color}"` : ''}><span class="ic">${esc(rw.icon)}</span><div><small>${t >= N ? 'À payer' + (nr > 1 ? ' · tournée n°' + nr : '') : 'Palier ' + t}${rw.personal ? ' · perso' : ''}</small>${esc(rw.label)}${rw.desc ? `<em>${esc(rw.desc)}</em>` : ''}</div></div>`
+         : nr ? `<div class="reward-badge gold"><span class="ic">${esc(fin.icon)}</span><div><small>Nouveau tour</small>${nr} tournée${nr > 1 ? 's' : ''} déjà due${nr > 1 ? 's' : ''}</div></div>`
          : `<div class="reward-badge none"><span class="ic">😇</span><div><small>Aucun palier</small>Clean pour l'instant</div></div>`}
     ${d.enabled ? `<div class="daily ${tv >= d.goal ? 'alert' : ''}">${tv >= d.goal ? esc(d.icon) + ' ' + esc(d.label) : `Aujourd'hui : ${tv}/${d.goal} avant alerte`}</div>` : ''}
   </article>`;
@@ -1042,7 +1067,7 @@ function renderTable(){
       ${u.days.map((v,i) => `<td class="${i === ti ? 'today' : ''}"><input type="number" min="0" value="${v}" data-day="${i}" aria-label="${esc(u.name)} ${DAYS[i]}"></td>`).join('')}
       <td class="total">${todayVal(u)}</td><td class="total">${weekTotal(u)}</td>
       <td><span class="tier-pill"><span class="mini">${Array.from({length:NT()}, (_,i) => `<i class="${i < t ? 'on' : ''} ${i === NT() - 1 ? 'g' : ''}"></i>`).join('')}</span>${t}</span></td>
-      <td>${rw ? esc(rw.icon + ' ' + rw.label) : '—'}</td></tr>`;
+      <td>${rw ? esc(rw.icon + ' ' + rw.label) : '—'}${roundsBadge(u)}</td></tr>`;
   }).join('');
   const dayTot = DAYS.map((_, i) => sum(S.users.map(u => u.days[i])));
   $('#tfoot').innerHTML = `<td>Total équipe</td>` + dayTot.map((v,i) => `<td class="${i === ti ? 'today' : ''}">${v}</td>`).join('') +
@@ -1071,6 +1096,8 @@ $('#cards').addEventListener('click', e => {
   else if (act === 'focus'){ prefs.focus = prefs.focus === u.id ? null : u.id; savePrefs(); render(); }
   else if (act === 'del' && confirm(`Supprimer ${u.name} de l'équipage ? Son historique sera effacé.`)) run(() => store.deleteUser(u.id));
 });
+// Entrée valide la saisie directe (carte ou tableau)
+['#cards', '#tbody'].forEach(sel => $(sel).addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); }));
 $('#cards').addEventListener('change', e => {
   if (e.target.dataset.act !== 'set') return;
   const u = userById(e.target.closest('.card').dataset.id);
@@ -1129,7 +1156,7 @@ function readRows(){
 }
 function openSettings(){
   const f = $('#formSettings'), s = S.settings;
-  f.thresholdMode.value = s.thresholdMode; f.step.value = s.step; f.tiers.value = s.tiers;
+  f.thresholdMode.value = s.thresholdMode; f.step.value = s.step; f.tiers.value = s.tiers; f.afterFinal.value = s.afterFinal;
   f.dailyEnabled.checked = s.daily.enabled; f.dailyGoal.value = s.daily.goal; f.dailyIcon.value = s.daily.icon; f.dailyLabel.value = s.daily.label;
   f.teamMode.value = s.team.mode; f.teamIcon.value = s.team.icon; f.teamLabel.value = s.team.label;
   f.showRanking.checked = s.showRanking; f.fx.value = prefs.fx; f.token.value = prefs.token || '';
@@ -1163,7 +1190,7 @@ $('#dlgSettings').addEventListener('close', () => {
   if ($('#dlgSettings').returnValue !== 'ok') return;
   const f = $('#formSettings');
   prefs.fx = f.fx.value; prefs.token = f.token.value.trim(); savePrefs(); applyFx();
-  const settings = { thresholdMode: f.thresholdMode.value, step: f.step.value, tiers: f.tiers.value, rewards: readRows(),
+  const settings = { thresholdMode: f.thresholdMode.value, step: f.step.value, tiers: f.tiers.value, afterFinal: f.afterFinal.value, rewards: readRows(),
     daily: { enabled: f.dailyEnabled.checked, goal: f.dailyGoal.value, icon: f.dailyIcon.value, label: f.dailyLabel.value },
     team: { mode: f.teamMode.value, icon: f.teamIcon.value, label: f.teamLabel.value }, showRanking: f.showRanking.checked };
   run(async () => { await store.saveSettings(settings); toast('Réglages enregistrés'); });
