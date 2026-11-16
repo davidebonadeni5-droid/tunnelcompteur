@@ -29,7 +29,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 :focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
-body.shake .wrap{animation:shake .4s cubic-bezier(.36,.07,.19,.97)}
 @keyframes shake{20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,2px)}80%{transform:translate(2px,-1px)}}
 
 /* ---------- En-tête ---------- */
@@ -75,30 +74,31 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .rays{position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1;margin:-35% 0 0 -35%;border-radius:50%;pointer-events:none;
   background:repeating-conic-gradient(from 0deg,rgba(0,240,255,.16) 0 2deg,transparent 2deg 15deg);
   -webkit-mask-image:radial-gradient(circle,#000 10%,transparent 70%);mask-image:radial-gradient(circle,#000 10%,transparent 70%);
-  opacity:calc(.15 + var(--lvl,0) * .05);will-change:transform;animation:spin 60s linear infinite}
-.tunnel-stage.max .rays{background:repeating-conic-gradient(from 0deg,rgba(255,184,0,.3) 0 3deg,transparent 3deg 12deg);animation-duration:14s}
-.ring{position:absolute;inset:0;--tx:calc(var(--mx) * var(--d));--ty:calc(var(--my) * var(--d));transform:translate(var(--tx),var(--ty)) scale(var(--s));transition:transform .5s cubic-bezier(.2,.8,.2,1);will-change:transform}
+  opacity:calc(.15 + var(--lvl,0) * .05)}
+body.fx-max .rays{will-change:transform;animation:spin 60s linear infinite}
+.tunnel-stage.max .rays{background:repeating-conic-gradient(from 0deg,rgba(255,184,0,.3) 0 3deg,transparent 3deg 12deg)}
+.ring{position:absolute;inset:0;--tx:calc(var(--mx) * var(--d));--ty:calc(var(--my) * var(--d));transform:translate(var(--tx),var(--ty)) scale(var(--s))}
 .ring .boost{width:100%;height:100%;position:relative}
 .ring svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.ring.on svg{will-change:transform;animation:spin var(--dur,30s) linear infinite;animation-direction:var(--dir,normal)}
+body.fx-max .ring.on svg{will-change:transform;animation:spin var(--dur,30s) linear infinite;animation-direction:var(--dir,normal)}
 .ring circle{fill:none;stroke:rgba(138,155,189,.26);stroke-width:1;transition:stroke .5s,stroke-width .5s}
 .ring .ticks{stroke-dasharray:.6 2.4;stroke-width:2.2;opacity:.6}
 .ring .main{stroke-dasharray:2 4}
 .ring .seg{stroke-dasharray:22 9 5 9;stroke-width:.7}
 .ring .sat{fill:rgba(138,155,189,.4);stroke:none;transition:fill .5s}
 .ring .orbit{transform-origin:50px 50px}
-.ring.on .orbit{animation:spin var(--sat,9s) linear infinite reverse}
+body.fx-max .ring.on .orbit{animation:spin var(--sat,9s) linear infinite reverse}
 .ring.on .main,.ring.on .seg,.ring.on .ticks{stroke:url(#gradOn)}
 .ring.on .main{stroke-width:1.7;stroke-dasharray:none}
 .ring.current .main{filter:drop-shadow(0 0 2.5px var(--cyan))}
 .ring.on .seg{stroke-width:1.1}
-.ring.current .seg{animation:dash 5s linear infinite}
+body.fx-max .ring.current .seg{animation:dash 5s linear infinite}
 .ring.on .sat{fill:#fff}
 .ring.on.last .main,.ring.on.last .seg,.ring.on.last .ticks{stroke:var(--gold)}
 .ring.on.last .main{filter:drop-shadow(0 0 4px var(--gold))}
 
 .ring.current .main{stroke-width:2.8}
-.ring.current{animation:breathe 2.4s ease-in-out infinite}
+body.fx-max .ring.current{animation:breathe 2.4s ease-in-out infinite}
 .ring .lbl{position:absolute;left:50%;top:-1%;transform:translate(-50%,-50%) scale(calc(1 / var(--s)));font-family:var(--mono);font-size:10px;padding:1px 6px;
   border-radius:6px;background:var(--bg);border:1px solid rgba(138,155,189,.3);color:var(--muted);white-space:nowrap;transition:color .4s,border-color .4s}
 .ring.lbl-b .lbl{top:101%}
@@ -120,7 +120,8 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 @keyframes lblpop{0%{transform:translate(-50%,-50%) scale(calc(2.4 / var(--s)))}100%{transform:translate(-50%,-50%) scale(calc(1 / var(--s)))}}
 
 .core{position:absolute;left:50%;top:50%;width:18%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(0,240,255,.35) 35%,rgba(123,44,191,.15) 65%,transparent 72%);will-change:transform,opacity;animation:corepulse 3s ease-in-out infinite}
+  background:radial-gradient(circle,rgba(255,255,255,.9),rgba(0,240,255,.35) 35%,rgba(123,44,191,.15) 65%,transparent 72%)}
+body.fx-max .core{will-change:transform,opacity;animation:corepulse 3s ease-in-out infinite}
 .core.flash::after{content:"";position:absolute;inset:-60%;border-radius:50%;background:radial-gradient(circle,var(--pc,#fff),transparent 60%);animation:coreflash .7s ease-out forwards}
 @keyframes coreflash{from{opacity:1;transform:scale(.4)}to{opacity:0;transform:scale(1.6)}}
 .tunnel-stage.max .core{background:radial-gradient(circle,#fff,rgba(255,184,0,.75) 35%,rgba(255,184,0,.2) 60%,transparent 72%)}
@@ -148,7 +149,8 @@ h1{margin:4px 0 0;font-family:var(--mono);font-weight:700;letter-spacing:.04em;f
 .rw.on{opacity:1;border-color:color-mix(in srgb,var(--rc,var(--cyan)) 45%,transparent);background:color-mix(in srgb,var(--rc,var(--cyan)) 6%,transparent)}
 .rw.on .ic{filter:none}
 .rw.on::after,.reward-badge::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.12) 50%,transparent 60%);
-  transform:translateX(-100%);will-change:transform;animation:shimmer 7s ease-in-out infinite;pointer-events:none}
+  transform:translateX(-100%);pointer-events:none;display:none}
+body.fx-max .rw.on::after,body.fx-max .reward-badge::after{display:block;will-change:transform;animation:shimmer 7s ease-in-out infinite}
 @keyframes shimmer{60%,100%{transform:translateX(100%)}}
 @keyframes glowic{50%{filter:drop-shadow(0 0 6px var(--rc,var(--cyan)))}}
 .bonus{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -467,9 +469,9 @@ body.fx-low .ring.on svg,body.fx-low .ring.on .orbit,body.fx-low .rays{animation
     <div class="grid2">
       <label>Intensité des effets
         <select name="fx">
-          <option value="max">Maximum</option>
-          <option value="normal">Normale</option>
-          <option value="low">Réduite (sans animation)</option>
+          <option value="normal">Fluide : calme au repos, effets à chaque tunnel (conseillé)</option>
+          <option value="max">Spectaculaire : animations permanentes (PC puissant)</option>
+          <option value="low">Aucune animation</option>
         </select>
       </label>
       <label>Jeton administrateur (si le serveur en exige un)<input type="password" name="token" autocomplete="off"></label>
@@ -531,7 +533,7 @@ const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch {
 const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } };
 function toast(msg, color){
   const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; if (color) t.style.setProperty('--tc', color);
-  const box = $('#toasts'); box.appendChild(t); while (box.children.length > 4) box.firstChild.remove();
+  const box = $('#toasts'); box.appendChild(t); while (box.children.length > 3) box.firstChild.remove();
   setTimeout(() => { t.classList.add('out'); t.addEventListener('animationend', () => t.remove(), {once:true}); setTimeout(() => t.remove(), 400); }, 3200);
 }
 const todayIdxLocal = () => (new Date().getDay() + 6) % 7;
@@ -543,10 +545,15 @@ function weekIdLocal(d = new Date()){
 }
 
 /* ---------- Préférences de cet écran ---------- */
-const prefs = Object.assign({ sort:'week', focus:null, fx: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'max', token:'' }, lsGet(LS_PREF) || {});
+const prefs = Object.assign({ sort:'week', focus:null, fx: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'low' : 'normal', token:'', fxV:2 }, lsGet(LS_PREF) || {});
+if (prefs.fxV !== 2){ prefs.fx = prefs.fx === 'low' ? 'low' : 'normal'; prefs.fxV = 2; }
 const savePrefs = () => lsSet(LS_PREF, prefs);
-const fxMul = () => prefs.fx === 'max' ? 1 : prefs.fx === 'normal' ? 0.5 : 0;
-function applyFx(){ document.body.classList.toggle('fx-low', prefs.fx === 'low'); }
+const fxMul = () => prefs.fx === 'low' ? 0 : 1;
+function applyFx(){
+  document.body.classList.toggle('fx-low', prefs.fx === 'low');
+  document.body.classList.toggle('fx-max', prefs.fx === 'max');
+  if (typeof warp !== 'undefined'){ if (prefs.fx === 'max') warp.start(); else warp.stop(); }
+}
 
 /* ---------- Réglages : normalisation (miroir du serveur) ---------- */
 function defaultSettings(){
@@ -722,34 +729,65 @@ function Warp(canvas, opts = {}){
   return {
     start(){ if (!raf) frame(); }, show(){ visible = true; }, stop(){ cancelAnimationFrame(raf); raf = 0; ctx.clearRect(0,0,w,h); },
     boost(amount, color){ target = Math.min(40, target + 6 + amount * 3); if (color) stars.forEach((s, i) => { if (i % 3 === 0) s.c = color; }); },
+    burst(amount, color, ms = 2500){ // démarre, accélère, puis s'arrête tout seul
+      this.boost(amount, color); this.start(); clearTimeout(this._t);
+      this._t = setTimeout(() => { if (prefs.fx !== 'max') this.stop(); }, ms);
+    },
     resize
   };
 }
 
-/* --- Confettis (canvas plein écran) --- */
+/* --- Particules et confettis : un seul canvas plein écran, émojis pré-dessinés --- */
 const FX = (() => {
   const c = $('#fx'), ctx = c.getContext('2d'); let parts = [], raf = 0, dpr = 1;
-  const resize = () => { dpr = Math.min(2, devicePixelRatio || 1); c.width = innerWidth * dpr; c.height = innerHeight * dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  const MAX = 260; // plafond de particules simultanées
+  const resize = () => { dpr = Math.min(1.5, devicePixelRatio || 1); c.width = innerWidth * dpr; c.height = innerHeight * dpr; };
   resize(); addEventListener('resize', resize);
-  function loop(){
-    ctx.clearRect(0,0,innerWidth,innerHeight);
-    parts = parts.filter(p => p.life > 0);
-    for (const p of parts){
-      p.vy += p.g; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.life--;
-      ctx.save(); ctx.globalAlpha = Math.min(1, p.life / 30); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
-      if (p.emoji){ ctx.font = (p.s * 2.6) + 'px serif'; ctx.textAlign = 'center'; ctx.fillText(p.emoji, 0, 0); }
-      else if (p.star){ ctx.beginPath(); ctx.arc(0,0,p.s/2,0,7); ctx.fill(); } else ctx.fillRect(-p.s/2, -p.s/4, p.s, p.s/2);
-      ctx.restore();
+  const sprites = new Map(); // émoji -> petit canvas dessiné une seule fois
+  function sprite(emoji){
+    if (!sprites.has(emoji)){
+      const sc = document.createElement('canvas'); sc.width = sc.height = 48;
+      const sx = sc.getContext('2d'); sx.font = '38px serif'; sx.textAlign = 'center'; sx.textBaseline = 'middle'; sx.fillText(emoji, 24, 26);
+      sprites.set(emoji, sc);
     }
-    raf = parts.length ? requestAnimationFrame(loop) : 0;
+    return sprites.get(emoji);
   }
+  function loop(){
+    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, c.width, c.height);
+    let w = 0;
+    for (const p of parts){
+      if (--p.life <= 0) continue;
+      parts[w++] = p;
+      p.vy += p.g; p.vx *= p.drag; p.vy *= p.drag; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      const k = p.clip; if (k && (p.x < k.left || p.x > k.right || p.y < k.top || p.y > k.bottom)) { p.life = 0; continue; }
+      ctx.globalAlpha = Math.min(1, p.life / p.fade);
+      const cos = Math.cos(p.r) * dpr, sin = Math.sin(p.r) * dpr;
+      ctx.setTransform(cos, sin, -sin, cos, p.x * dpr, p.y * dpr);
+      if (p.img){ const k = p.s * 2.4; ctx.drawImage(p.img, -k / 2, -k / 2, k, k); }
+      else { ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); }
+    }
+    parts.length = w;
+    ctx.globalAlpha = 1;
+    raf = w ? requestAnimationFrame(loop) : 0;
+  }
+  const add = p => { if (parts.length < MAX) parts.push(p); };
   return {
-    burst(x, y, colors, n = 80, power = 9, emoji){
+    // confettis avec gravité
+    burst(x, y, colors, n = 50, power = 9, emoji, life = 95){
       n = Math.round(n * fxMul()); if (!n) return;
+      const img = emoji ? sprite(emoji) : null;
       for (let i = 0; i < n; i++){ const a = Math.random() * Math.PI * 2, v = Math.random() * power + 2;
-        parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 4, g: .22, r: Math.random() * 6, vr: (Math.random() - .5) * .4, s: 6 + Math.random() * 6,
-          c: colors[i % colors.length], life: 80 + Math.random() * 60, star: Math.random() < .3, emoji: emoji && i % 4 === 0 ? emoji : null }); }
-      if (!raf) loop();
+        add({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - power * .45, g: .22, drag: .99, r: Math.random() * 6, vr: (Math.random() - .5) * .4,
+          s: 6 + Math.random() * 6, c: colors[i % colors.length], life: life * (0.75 + Math.random() * 0.5), fade: Math.min(30, life / 2), img: img && i % 4 === 0 ? img : null }); }
+      if (!raf) raf = requestAnimationFrame(loop);
+    },
+    // étincelles qui jaillissent du centre du tunnel
+    sparks(x, y, color, n, radius, clip){
+      n = Math.round(n * fxMul()); if (!n) return;
+      for (let i = 0; i < n; i++){ const a = Math.random() * Math.PI * 2, v = radius / 38 * (0.6 + Math.random() * 0.8);
+        add({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, g: 0, drag: .985, r: a, vr: 0, s: 3 + Math.random() * 4,
+          c: Math.random() < .8 ? color : '#ffffff', life: 40 + Math.random() * 30, fade: 25, img: null, clip }); }
+      if (!raf) raf = requestAnimationFrame(loop);
     }
   };
 })();
@@ -778,36 +816,40 @@ const warp = Warp($('#warp'), { speed: 0.5, count: 140, fade: true });
 const hyperWarp = Warp($('#hyperCanvas'), { speed: 14, count: 420, trail: true, thick: 3, gold: true });
 
 // Parallaxe : le tunnel suit le pointeur
+let pxRaf = 0;
 $('#stage').addEventListener('pointermove', e => {
-  if (prefs.fx === 'low') return;
-  const r = e.currentTarget.getBoundingClientRect();
+  if (prefs.fx !== 'max' || pxRaf) return;
+  const stage = e.currentTarget, cx = e.clientX, cy = e.clientY;
+  pxRaf = requestAnimationFrame(() => { pxRaf = 0; parallax(stage, cx, cy); });
+});
+function parallax(stage, clientX, clientY){
+  const e = { clientX, clientY };
+  const r = stage.getBoundingClientRect();
   const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
   const amp = r.width * 0.09; // les anneaux profonds se décalent plus : effet de profondeur
   $('#tunnel').style.setProperty('--mx', (x * amp).toFixed(1) + 'px'); $('#tunnel').style.setProperty('--my', (y * amp).toFixed(1) + 'px');
-});
+}
 $('#stage').addEventListener('pointerleave', () => { $('#tunnel').style.setProperty('--mx','0px'); $('#tunnel').style.setProperty('--my','0px'); });
 
 /* --- Onde de choc « tunnel provoqué » --- */
 function provoke(color, amount){
   const m = fxMul(); if (!m) return;
   const upTo = Math.max(1, shownTier());
+  rings.forEach(r => r.classList.remove('hit','spun'));
+  void $('#tunnel').offsetWidth; // une seule relance pour tous les anneaux
   rings.forEach((r, i) => {
-    r.classList.remove('hit','spun');
-    if (i < upTo){ void r.offsetWidth;
-      r.style.setProperty('--delay', (i * 0.055) + 's'); r.style.setProperty('--pc', color);
-      r.style.setProperty('--boostDeg', ((i % 2 ? -1 : 1) * (140 + amount * 40)) + 'deg');
-      r.classList.add('hit','spun'); }
+    if (i >= upTo) return;
+    r.style.setProperty('--delay', (i * 0.055) + 's'); r.style.setProperty('--pc', color);
+    r.style.setProperty('--boostDeg', ((i % 2 ? -1 : 1) * (140 + amount * 40)) + 'deg');
+    r.classList.add('hit','spun');
   });
   const core = $('#core'); core.classList.remove('flash'); void core.offsetWidth; core.style.setProperty('--pc', color); core.classList.add('flash');
-  warp.boost(amount, color);
-  const stage = $('#stage'), n = Math.round(Math.min(110, 20 + amount * 14) * m), R = stage.clientWidth * 0.62;
-  for (let k = 0; k < n; k++){
-    const p = document.createElement('i'), a = Math.random() * Math.PI * 2, rr = R * (0.5 + Math.random() * 0.6);
-    p.className = 'particle';
-    p.style.cssText = `--pc:${Math.random() < .8 ? color : '#ffffff'};--dx:${Math.cos(a)*rr}px;--dy:${Math.sin(a)*rr}px;--t:${(0.8+Math.random()*0.9).toFixed(2)}s;--d:${(Math.random()*0.35).toFixed(2)}s`;
-    p.addEventListener('animationend', () => p.remove(), { once:true }); stage.appendChild(p);
-  }
-  if (amount >= 5 && m === 1){ document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
+  warp.burst(amount, color);
+  const st = $('#stage').getBoundingClientRect(), pan = $('.tunnel-panel').getBoundingClientRect();
+  const cy = st.top + st.height / 2;
+  if (cy > 0 && cy < innerHeight) // seulement si le tunnel est à l'écran, et sans déborder de son panneau
+    FX.sparks(st.left + st.width / 2, cy, color, Math.min(40, 14 + amount * 6), st.width * 0.55, pan);
+  else warp.stop();
 }
 function ignite(tier){
   if (!fxMul() || tier < 1) return;
@@ -834,7 +876,7 @@ function hyperspace(u){
   h.querySelectorAll('.flash').forEach(e => e.remove());
   h.classList.add('show');
   if (fxMul()){ const f = document.createElement('div'); f.className = 'flash'; h.appendChild(f); hyperWarp.resize(); hyperWarp.show(); hyperWarp.start(); }
-  setTimeout(() => FX.burst(innerWidth / 2, innerHeight / 2, ['#FFB800','#fff','#00F0FF','#7B2CBF', u ? u.color : '#FFB800'], 260, 16, rw.icon), 700);
+  setTimeout(() => FX.burst(innerWidth / 2, innerHeight / 2, ['#FFB800','#fff','#00F0FF','#7B2CBF', u ? u.color : '#FFB800'], 200, 16, rw.icon), 700);
   clearTimeout(hyperTimer); hyperTimer = setTimeout(closeHyper, 6500);
 }
 function closeHyper(){ $('#hyper').classList.remove('show'); hyperWarp.stop(); }
@@ -862,7 +904,7 @@ function apply(next, event, fromStream){
       provoke(u.color, event.delta);
       const card = document.querySelector(`.card[data-id="${u.id}"]`);
       if (card){ card.classList.add('pop'); floatText(card.querySelector('.val'), '+' + event.delta, u.color); }
-      if (fromStream) toast(`${u.name} +${event.delta}`, u.color);
+      if (fromStream && !(lastLocal.id === u.id && Date.now() - lastLocal.t < 3000)) toast(`${u.name} +${event.delta}`, u.color);
     }
     if (u && S.settings.daily.enabled && event.day === S.today){
       const before = u.days[S.today] - event.delta;
@@ -879,7 +921,7 @@ function apply(next, event, fromStream){
       else {
         toast(`${u.name} passe le palier ${b} : ${rw.icon} ${rw.label}`, rw.color || u.color);
         const card = document.querySelector(`.card[data-id="${u.id}"] .reward-badge`);
-        if (card){ const [x, y] = centerOf(card); FX.burst(x, y, [u.color, '#fff', rw.color || '#00F0FF'], 70, 9, rw.icon); }
+        if (card){ const [x, y] = centerOf(card); FX.burst(x, y, [u.color, '#fff', rw.color || u.color], 28, 4.5, rw.icon, 55); }
       }
     }
   }
@@ -1016,6 +1058,7 @@ function renderTable(){
    Interactions
    ===================================================================== */
 const run = p => Promise.resolve().then(p).catch(e => toast('⚠ ' + e.message, '#ff4d6d'));
+let lastLocal = { id: null, t: 0 }; // dernière action faite sur cet écran (évite de s'auto-notifier)
 const userById = id => S.users.find(u => u.id === id);
 
 $('#cards').addEventListener('click', e => {
@@ -1023,7 +1066,7 @@ $('#cards').addEventListener('click', e => {
   const act = b.dataset.act;
   if (act === 'new') return openUser(null);
   const u = userById(b.closest('.card')?.dataset.id); if (!u) return;
-  if (act === 'add') run(() => store.score(u.id, S.today, +b.dataset.n));
+  if (act === 'add'){ lastLocal = { id: u.id, t: Date.now() }; run(() => store.score(u.id, S.today, +b.dataset.n)); }
   else if (act === 'edit') openUser(u);
   else if (act === 'focus'){ prefs.focus = prefs.focus === u.id ? null : u.id; savePrefs(); render(); }
   else if (act === 'del' && confirm(`Supprimer ${u.name} de l'équipage ? Son historique sera effacé.`)) run(() => store.deleteUser(u.id));
@@ -1120,7 +1163,6 @@ $('#dlgSettings').addEventListener('close', () => {
   if ($('#dlgSettings').returnValue !== 'ok') return;
   const f = $('#formSettings');
   prefs.fx = f.fx.value; prefs.token = f.token.value.trim(); savePrefs(); applyFx();
-  if (prefs.fx === 'low') warp.stop(); else warp.start();
   const settings = { thresholdMode: f.thresholdMode.value, step: f.step.value, tiers: f.tiers.value, rewards: readRows(),
     daily: { enabled: f.dailyEnabled.checked, goal: f.dailyGoal.value, icon: f.dailyIcon.value, label: f.dailyLabel.value },
     team: { mode: f.teamMode.value, icon: f.teamIcon.value, label: f.teamLabel.value }, showRanking: f.showRanking.checked };
@@ -1164,7 +1206,7 @@ async function boot(){
     document.addEventListener('visibilitychange', () => { if (!document.hidden && Local.db.week !== weekIdLocal()){ S = null; apply(Local.load()); } });
     addEventListener('storage', e => { if (e.key === LS_KEY){ const prevRev = S.rev; Local.db = lsGet(LS_KEY); Local.db.settings = normSettings(Local.db.settings); if (Local.db.rev > prevRev) apply(Local.snapshot(), { type:'sync' }); } });
   }
-  if (prefs.fx !== 'low') warp.start();
+  applyFx();
   setTimeout(() => { provoke('#00F0FF', 3); for (let t = 1; t <= shownTier(); t++) setTimeout(() => ignite(t), t * 110); }, 500);
 }
 boot();
