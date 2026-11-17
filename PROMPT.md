@@ -23,7 +23,7 @@
 
 1. En-tête « Tunnel aujourd'hui de la semaine », badge « 🥐 à 15 tunnels », état de connexion, total de l'équipe.
 2. **Tunnel provoqué** : un anneau SVG par palier en perspective. À chaque ajout : onde de choc, accélération, particules à la couleur de la personne. Au dernier palier : écran plein écran doré avec pluie de croissants.
-3. **Cartes participant** : nom, titre humoristique, compteur du jour, `−1` `+1` `+5`, saisie directe, distance jusqu'aux croissants, gage actuel ; ajout / modification / suppression.
+3. **Cartes participant** : nom, titre humoristique, compteur du jour, `−1` `+1`, saisie directe, bouton « Tournée payée » (dettes reportées d'une semaine à l'autre), distance jusqu'aux croissants, gage actuel ; ajout / modification / suppression.
 4. **Tableau de la semaine** : Lun→Dim éditables, total, palier, gage ; tri ; clic = suivre la personne dans le tunnel.
 5. **Réglages** : paliers, gages (thèmes prêts à l'emploi), alerte du jour, gage d'équipe, intensité des effets, export / import.
 
